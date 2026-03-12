@@ -29,11 +29,6 @@ dependencies {
 
     // JUnit 5 (Jupiter) теперь является единственным поддерживаемым стандартом
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {

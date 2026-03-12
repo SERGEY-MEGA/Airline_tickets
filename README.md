@@ -1,80 +1,136 @@
-# Система Бронирования Авиабилетов (Лабораторная работа 1)
+# Система Бронирования Авиабилетов — Лабораторная работа 1
 
-Данный проект представляет собой реализацию системы бронирования авиабилетов для дисциплины "Высоконагруженные вычислительные системы".
+Дисциплина: **Высоконагруженные вычислительные системы**
 
-## 🛠 Технологический стек
-- **Язык**: Java 25
-- **Фреймворк**: Spring Boot 4
-- **Сборщик**: Gradle
-- **Хранилище**: In-memory (статические коллекции `ConcurrentHashMap`) для имитации базы данных.
+## Стек
+- Java 25 · Spring Boot 4 · Gradle
+- Хранилище: статические коллекции (`HashMap`) в памяти
 
-## 🚀 Предметная область
-Система реализует базовые функции для бронирования мест на авиарейсы:
-1. **Flight (Рейс)** - номер рейса, направление, дата вылета, общая вместимость (capacity).
-2. **Passenger (Пассажир)** - ФИО, паспортные данные, контакты.
-3. **Booking (Бронирование)** - связь пассажира и рейса, класс обслуживания, конкретное место.
+---
 
-## 🔧 Архитектурные решения (для "Высоконагруженных систем")
+## Что реализовано
 
-### 1. Почему In-memory коллекции?
-По заданию в качестве репозиториев используются статические поля-коллекции Java. Для обеспечения потокобезопасности при многопоточном доступе выбраны коллекции класса **`ConcurrentHashMap`**. Они позволяют безопасно читать и добавлять элементы из разных потоков без блокировки всей коллекции.
+| Сущность | Поля |
+|---|---|
+| **Flight** (Рейс) | `id`, `flightNumber`, `destination`, `departureDate`, `capacity` |
+| **Passenger** (Пассажир) | `id`, `fullName`, `passportData`, `contacts` |
+| **Booking** (Бронирование) | `id`, `flightId`, `passengerId`, `serviceClass`, `seat` |
 
-### 2. Защита от состояния гонки (Race Condition)
-Самое критичное место системы — это **процесс бронирования билета** (`BookingService`). Если два пользователя одновременно (миллисекунды разницы) попытаются купить последний билет на рейс или забронировать одно и то же место (например, "12A"), без должной защиты система может продать два билета на одно место.
-
-**Как это решено в коде:**
-В методе `bookTicket` используется блок `synchronized (bookingLock)`. 
-Это гарантирует, что проверка количества доступных мест и проверка занятости конкретного места выполняются **атомарно** с сохранением брони. Пока один поток завершает бронирование, другой ожидает очереди.
-В реальной БД (например, PostgreSQL) вместо этого блока использовались бы транзакции с уровнем изоляции SERIALIZABLE или явная блокировка строк `SELECT ... FOR UPDATE`.
-
-## 💻 Как запустить проект
-
-1. Убедитесь, что у вас установлена Java (желательно версии 21-25).
-2. Откройте терминал в папке проекта.
-3. Запустите приложение с помощью встроенного Gradle-обертки:
-   ```bash
-   ./gradlew bootRun
-   ```
-   Приложение запустится на порту по умолчанию (`8080`).
-
-## 🧪 Как протестировать и показать работу
-
-Вы можете использовать `cURL` (в терминале), Postman или любой другой HTTP-клиент (например, встроенный HTTP-клиент в IntelliJ IDEA).
-
-### 1. Получить список рейсов
-По умолчанию добавление рейсов не происходит автоматически. Создадим один:
-```bash
-curl -X POST http://localhost:8080/flights \
--H "Content-Type: application/json" \
--d '{"flightNumber": "SU100", "destination": "Moscow", "departureDate": "2026-03-20", "capacity": 2}'
+### Структура проекта
+```
+src/main/java/digital/zil/hl/module1/
+├── model/          — Flight, Passenger, Booking (POJO, без Lombok)
+├── repository/     — FlightRepository, PassengerRepository, BookingRepository
+│                     (один класс на сущность, static HashMap, без интерфейсов)
+├── service/        — FlightService, PassengerService, BookingService
+└── controller/     — FlightController, PassengerController, BookingController
+    └── exeption/   — AirlineException, GlobalExceptionHandler
 ```
 
-### 2. Регистрация пассажира
-```bash
-curl -X POST http://localhost:8080/passengers \
--H "Content-Type: application/json" \
--d '{"fullName": "Иван Иванов", "passportData": "1234 567890", "contacts": "test@test.com"}'
+---
+
+## API
+
+### Рейсы
+```
+GET    /flights                                       — список всех рейсов
+GET    /flights/{id}                                  — рейс по ID
+GET    /flights/availability?destination=X&date=YYYY-MM-DD   — остаток мест
+POST   /flights                                       — создать рейс
+PUT    /flights/{id}                                  — обновить рейс (в т.ч. номер)
+DELETE /flights/{id}                                  — удалить рейс
 ```
 
-### 3. Бронирование места
-Используйте `id` рейса и пассажира (скорее всего, они будут равны 1).
-```bash
-curl -X POST http://localhost:8080/bookings \
--H "Content-Type: application/json" \
--d '{"flightId": 1, "passengerId": 1, "serviceClass": "Economy", "seat": "1A"}'
+### Пассажиры
+```
+GET    /passengers                  — список пассажиров
+GET    /passengers/{id}             — пассажир по ID
+POST   /passengers                  — зарегистрировать пассажира
+PUT    /passengers/{id}             — обновить данные пассажира
+DELETE /passengers/{id}             — удалить пассажира
 ```
 
-### 4. Проверка остатка свободных мест
-Выводит рейс и количество оставшихся мест (`availableSeats`).
-```bash
-curl -G http://localhost:8080/flights/availability \
---data-urlencode "destination=Moscow" \
---data-urlencode "date=2026-03-20"
+### Бронирования
+```
+GET    /bookings                    — список бронирований
+GET    /bookings/{id}               — бронирование по ID
+POST   /bookings                    — забронировать место
+DELETE /bookings/{id}               — отменить бронирование
 ```
 
-### Запуск Unit-тестов
-Чтобы показать преподавателю, что вы предусмотрели нагрузочное тестирование, запустите:
+---
+
+## Запуск
+
+```bash
+./gradlew bootRun
+```
+Приложение запустится на `http://localhost:8080`.
+
+**Запуск тестов:**
 ```bash
 ./gradlew test --no-daemon
 ```
-Внутри есть тест `BookingServiceConcurrencyTest`. Он искусственно создает много потоков (Thread), которые одновременно бьют в метод бронирования, и проверяет, что лимит вместимости рейса (capacity) строго соблюдается и не превышается.
+
+---
+
+## Демонстрация (curl-команды)
+
+### 1. Создать рейс
+```bash
+curl -X POST http://localhost:8080/flights \
+  -H "Content-Type: application/json" \
+  -d '{"flightNumber":"SU100","destination":"Moscow","departureDate":"2026-03-20","capacity":2}'
+```
+
+### 2. Изменить номер рейса SU100 → SU200
+```bash
+# PUT /flights/{id} — полное обновление рейса с ID = 1
+curl -X PUT http://localhost:8080/flights/1 \
+  -H "Content-Type: application/json" \
+  -d '{"flightNumber":"SU200","destination":"Moscow","departureDate":"2026-03-20","capacity":2}'
+```
+> Метод `put()` в `FlightRepository` заменяет объект целиком, сохраняя тот же `id`.
+
+### 3. Зарегистрировать пассажира
+```bash
+curl -X POST http://localhost:8080/passengers \
+  -H "Content-Type: application/json" \
+  -d '{"fullName":"Иван Иванов","passportData":"1234 567890","contacts":"test@test.com"}'
+```
+
+### 4. Забронировать место
+```bash
+curl -X POST http://localhost:8080/bookings \
+  -H "Content-Type: application/json" \
+  -d '{"flightId":1,"passengerId":1,"serviceClass":"Economy","seat":"1A"}'
+```
+
+### 5. Проверить остаток свободных мест
+```bash
+curl "http://localhost:8080/flights/availability?destination=Moscow&date=2026-03-20"
+```
+Ответ включает поле `availableSeats = capacity - количество_броней`.
+
+---
+
+## Ключевой момент для "Высоконагруженных систем"
+
+**Проблема:** Если два пользователя одновременно зайдут на последнее место или превысят вместимость рейса — без защиты оба запроса "пройдут" в промежутке между проверкой и записью (Race Condition).
+
+**Решение (`BookingRepository.java`):**
+```java
+public synchronized Booking save(Booking booking, int flightCapacity) {
+    // Обе проверки выполняются атомарно — пока один поток внутри,
+    // все остальные ждут у входа.
+    if (countByFlightId(booking.getFlightId()) >= flightCapacity) { ... }
+    if (isSeatTaken(booking.getFlightId(), booking.getSeat()))     { ... }
+    bookings.put(...);
+    return booking;
+}
+```
+
+Аналог в реальной БД — транзакция с `SELECT ... FOR UPDATE` или уровень изоляции `SERIALIZABLE`.
+
+**Тест** (`BookingServiceConcurrencyTest`): 15 потоков одновременно бронируют места на рейс вместимостью 10.
+Ровно 10 проходят, 5 получают `AirlineException`. Overoverbooking исключён.
