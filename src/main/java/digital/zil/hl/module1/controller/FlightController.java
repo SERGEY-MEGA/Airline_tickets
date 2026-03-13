@@ -50,6 +50,17 @@ public class FlightController {
     }
 
     /**
+     * Поиск доступности мест на конкретное направление и дату.
+     * Пример: GET /flights/availability/search?destination=Moscow&date=2026-03-20
+     */
+    @GetMapping("/flights/availability/search")
+    public List<AvailabilityResponse> searchAvailability(
+            @RequestParam String destination,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return flightService.getFlightsAvailabilityByDestinationAndDate(destination, date);
+    }
+
+    /**
      * Выводит остаток свободных мест по номеру рейса.
      * Пример: GET /flights/number/SU301/availability
      */

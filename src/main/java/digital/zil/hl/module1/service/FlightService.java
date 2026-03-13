@@ -99,4 +99,23 @@ public class FlightService {
                 })
                 .toList();
     }
+
+    /**
+     * Возвращает список доступности для рейсов на конкретное направление и дату.
+     */
+    public List<AvailabilityResponse> getFlightsAvailabilityByDestinationAndDate(String destination, LocalDate date) {
+        return flightRepository.findByDestinationAndDate(destination, date).stream()
+                .map(flight -> {
+                    int booked = (int) bookingRepository.countByFlightId(flight.getId());
+                    int available = flight.getCapacity() - booked;
+                    return new AvailabilityResponse(
+                            flight.getId(),
+                            flight.getFlightNumber(),
+                            flight.getCapacity(),
+                            booked,
+                            available
+                    );
+                })
+                .toList();
+    }
 }
