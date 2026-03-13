@@ -63,4 +63,21 @@ public class FlightService {
                 available
         );
     }
+
+    /**
+     * Возвращает доступность мест по номеру рейса (например, "SU301").
+     */
+    public AvailabilityResponse getFlightAvailabilityByNumber(String flightNumber) {
+        Flight flight = flightRepository.findByFlightNumber(flightNumber);
+        int booked = (int) bookingRepository.countByFlightId(flight.getId());
+        int available = flight.getCapacity() - booked;
+
+        return new AvailabilityResponse(
+                flight.getId(),
+                flight.getFlightNumber(),
+                flight.getCapacity(),
+                booked,
+                available
+        );
+    }
 }

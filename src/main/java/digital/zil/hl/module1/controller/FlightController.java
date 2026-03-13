@@ -39,6 +39,15 @@ public class FlightController {
     public AvailabilityResponse getFlightAvailability(@PathVariable Long flightId) {
         return flightService.getFlightAvailability(flightId);
     }
+
+    /**
+     * Выводит остаток свободных мест по номеру рейса.
+     * Пример: GET /flights/number/SU301/availability
+     */
+    @GetMapping("/flights/number/{flightNumber}/availability")
+    public AvailabilityResponse getAvailabilityByNumber(@PathVariable String flightNumber) {
+        return flightService.getFlightAvailabilityByNumber(flightNumber);
+    }
     @PostMapping("/flights")
     public Flight saveFlight(@RequestBody Flight flight) {
         return flightService.saveFlight(flight);

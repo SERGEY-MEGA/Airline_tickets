@@ -15,8 +15,9 @@ import static java.lang.String.format;
 @Repository
 public class FlightRepository {
 
-    public static final String FLIGHT_NOT_FOUND_MSG      = "Рейс с ID %d не найден";
-    public static final String FLIGHT_ALREADY_EXISTS_MSG = "Рейс с номером '%s' уже существует";
+    public static final String FLIGHT_NOT_FOUND_MSG          = "Рейс с ID %d не найден";
+    public static final String FLIGHT_NOT_FOUND_NUMBER_MSG  = "Рейс с номером '%s' не найден";
+    public static final String FLIGHT_ALREADY_EXISTS_MSG    = "Рейс с номером '%s' уже существует";
 
     private final Map<Long, Flight> flights = new HashMap<>();
     private final AtomicLong idCounter = new AtomicLong(1);
@@ -31,6 +32,14 @@ public class FlightRepository {
             throw new AirlineException(format(FLIGHT_NOT_FOUND_MSG, id));
         }
         return flight;
+    }
+
+    /** Поиск рейса по номеру (например, "SU301") */
+    public Flight findByFlightNumber(@NonNull String flightNumber) {
+        return flights.values().stream()
+                .filter(f -> f.getFlightNumber().equalsIgnoreCase(flightNumber))
+                .findFirst()
+                .orElseThrow(() -> new AirlineException(format(FLIGHT_NOT_FOUND_NUMBER_MSG, flightNumber)));
     }
 
     /** Поиск рейсов по направлению и дате — для отображения остатка мест */
