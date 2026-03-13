@@ -80,4 +80,23 @@ public class FlightService {
                 available
         );
     }
+
+    /**
+     * Возвращает доступность мест по ВСЕМ рейсам.
+     */
+    public List<AvailabilityResponse> getAllFlightsAvailability() {
+        return flightRepository.findAll().stream()
+                .map(flight -> {
+                    int booked = (int) bookingRepository.countByFlightId(flight.getId());
+                    int available = flight.getCapacity() - booked;
+                    return new AvailabilityResponse(
+                            flight.getId(),
+                            flight.getFlightNumber(),
+                            flight.getCapacity(),
+                            booked,
+                            available
+                    );
+                })
+                .toList();
+    }
 }
