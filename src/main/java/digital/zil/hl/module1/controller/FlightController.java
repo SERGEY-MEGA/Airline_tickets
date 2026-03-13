@@ -3,6 +3,7 @@ package digital.zil.hl.module1.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import digital.zil.hl.module1.controller.dto.AvailabilityResponse;
 import digital.zil.hl.module1.model.Flight;
 import digital.zil.hl.module1.service.FlightService;
 
@@ -31,16 +32,13 @@ public class FlightController {
     }
 
     /**
-     * Выводит рейсы по направлению и дате с остатком свободных мест.
-     * Пример: GET /flights/availability?destination=Moscow&date=2026-03-20
+     * Выводит информацию о рейсе и остаток свободных мест.
+     * Пример: GET /flights/6/availability
      */
-    @GetMapping("/flights/availability")
-    public List<Map<String, Object>> getAvailability(
-            @RequestParam String destination,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return flightService.getAvailability(destination, date);
+    @GetMapping("/flights/{flightId}/availability")
+    public AvailabilityResponse getFlightAvailability(@PathVariable Long flightId) {
+        return flightService.getFlightAvailability(flightId);
     }
-
     @PostMapping("/flights")
     public Flight saveFlight(@RequestBody Flight flight) {
         return flightService.saveFlight(flight);

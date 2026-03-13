@@ -3,6 +3,7 @@ package digital.zil.hl.module1.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import digital.zil.hl.module1.controller.exeption.AirlineException;
+import digital.zil.hl.module1.controller.dto.AvailabilityResponse;
 import digital.zil.hl.module1.model.Flight;
 import digital.zil.hl.module1.repository.BookingRepository;
 import digital.zil.hl.module1.repository.FlightRepository;
@@ -47,19 +48,19 @@ public class FlightService {
     }
 
     /**
-     * Возвращает список рейсов по направлению и дате
-     * вместе с количеством свободных мест на каждом.
+     * Возвращает доступность мест для конкретного рейса по его ID.
      */
-    public List<Map<String, Object>> getAvailability(String destination, LocalDate date) {
-        return flightRepository.findByDestinationAndDate(destination, date).stream()
-                .map(flight -> {
-                    long booked = bookingRepository.countByFlightId(flight.getId());
-                    long available = flight.getCapacity() - booked;
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("flight", flight);
-                    result.put("availableSeats", available);
-                    return result;
-                })
-                .collect(Collectors.toList());
+    public AvailabilityResponse getFlightAvailability(Long flightId) {
+        Flight flight = flightRepository.findById(flightId);
+        int booked = (int) bookingRepository.countByFlightId(flightId);
+        int available = flight.getCapacity() - booked;
+
+        return new AvailabilityResponse(
+                flight.getId(),
+                flight.getFlightNumber(),
+                flight.getCapacity(),
+                booked,
+                available
+        );
     }
 }

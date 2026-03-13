@@ -73,14 +73,15 @@ public class FlightControllerTest {
 
     @Test
     public void getAvailability_should_returnCorrectSeats() throws Exception {
-        flightRepository.save(new Flight(null, "SU101", "London", LocalDate.of(2027, 4, 1), 200));
+        Flight flight = flightRepository.save(new Flight(null, "SU101", "London", LocalDate.of(2027, 4, 1), 200));
 
-        mvc.perform(get("/flights/availability")
-                .param("destination", "London")
-                .param("date", "2027-04-01")
+        mvc.perform(get("/flights/" + flight.getId() + "/availability")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].flight.flightNumber").value("SU101"))
-                .andExpect(jsonPath("$[0].availableSeats").value(200));
+                .andExpect(jsonPath("$.flightId").value(flight.getId()))
+                .andExpect(jsonPath("$.flightNumber").value("SU101"))
+                .andExpect(jsonPath("$.capacity").value(200))
+                .andExpect(jsonPath("$.bookedSeats").value(0))
+                .andExpect(jsonPath("$.availableSeats").value(200));
     }
 }

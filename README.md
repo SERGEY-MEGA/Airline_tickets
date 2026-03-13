@@ -35,7 +35,7 @@ src/main/java/digital/zil/hl/module1/
 ```
 GET    /flights                                       — список всех рейсов
 GET    /flights/{id}                                  — рейс по ID
-GET    /flights/availability?destination=X&date=YYYY-MM-DD   — остаток мест
+GET    /flights/{flightId}/availability               — остаток мест для рейса
 POST   /flights                                       — создать рейс
 PUT    /flights/{id}                                  — обновить рейс (в т.ч. номер)
 DELETE /flights/{id}                                  — удалить рейс
@@ -108,9 +108,9 @@ curl -X POST http://localhost:8080/bookings \
 
 ### 5. Проверить остаток свободных мест
 ```bash
-curl "http://localhost:8080/flights/availability?destination=Moscow&date=2026-03-20"
+curl "http://localhost:8080/flights/1/availability"
 ```
-Ответ включает поле `availableSeats = capacity - количество_броней`.
+Ожидаемый ответ включает поля `capacity`, `bookedSeats` и `availableSeats`.
 
 ---
 
