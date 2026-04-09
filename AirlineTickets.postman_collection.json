@@ -1,0 +1,185 @@
+{
+  "info": {
+    "_postman_id": "d5d4b3f3-7b31-4b91-9d07-4dd1a7b4b001",
+    "name": "Airline Tickets API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Flights",
+      "item": [
+        {
+          "name": "Get All Flights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/flights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "flights"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Flight",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flightNumber\": \"SU777\",\n  \"destination\": \"Novosibirsk\",\n  \"departureDate\": \"2026-06-15\",\n  \"capacity\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "flights"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Passengers",
+      "item": [
+        {
+          "name": "Get All Passengers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/passengers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "passengers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Passenger",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Мария Смирнова\",\n  \"passportData\": \"5555 666777\",\n  \"contacts\": \"maria@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/passengers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "passengers"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Get All Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flightId\": 1,\n  \"passengerId\": 1,\n  \"serviceClass\": \"ECONOMY\",\n  \"seat\": \"5A\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Free Seats",
+      "item": [
+        {
+          "name": "Get Free Seats By Destination And Date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/flights/free-seats?destination=Moscow&date=2026-06-10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "flights",
+                "free-seats"
+              ],
+              "query": [
+                {
+                  "key": "destination",
+                  "value": "Moscow"
+                },
+                {
+                  "key": "date",
+                  "value": "2026-06-10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

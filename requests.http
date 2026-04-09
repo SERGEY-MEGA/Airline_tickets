@@ -1,0 +1,34 @@
+### Создать рейс
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "flightNumber": "SU777",
+  "destination": "Novosibirsk",
+  "departureDate": "2026-06-15",
+  "capacity": 10
+}
+
+### Создать пассажира
+POST http://localhost:8080/passengers
+Content-Type: application/json
+
+{
+  "fullName": "Мария Смирнова",
+  "passportData": "5555 666777",
+  "contacts": "maria@example.com"
+}
+
+### Создать бронирование
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": 1,
+  "passengerId": 1,
+  "serviceClass": "ECONOMY",
+  "seat": "5A"
+}
+
+### Получить свободные места по направлению и дате
+GET http://localhost:8080/flights/free-seats?destination=Moscow&date=2026-06-10
