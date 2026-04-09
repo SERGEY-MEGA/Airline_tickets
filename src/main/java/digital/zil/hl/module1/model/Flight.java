@@ -1,22 +1,43 @@
 package digital.zil.hl.module1.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import org.springframework.lang.NonNull;
-import java.time.LocalDate;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "flights")
 public class Flight {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "flight_number", nullable = false, unique = true)
     @NonNull
     private String flightNumber;
 
+    @Column(nullable = false)
     @NonNull
     private String destination;
 
+    @Column(name = "departure_date", nullable = false)
     @NonNull
     private LocalDate departureDate;
 
+    @Column(nullable = false)
     private int capacity;
+
+    @OneToMany(mappedBy = "flight")
+    private List<Booking> bookings = new ArrayList<>();
 
     public Flight() {
     }
@@ -43,6 +64,9 @@ public class Flight {
 
     public int getCapacity() { return capacity; }
     public void setCapacity(int capacity) { this.capacity = capacity; }
+
+    public List<Booking> getBookings() { return bookings; }
+    public void setBookings(List<Booking> bookings) { this.bookings = bookings; }
 
     @Override
     public String toString() {

@@ -1,24 +1,58 @@
 package digital.zil.hl.module1.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import org.springframework.lang.NonNull;
 
+@Entity
+@Table(
+        name = "bookings",
+        uniqueConstraints = @UniqueConstraint(name = "uk_booking_flight_seat", columnNames = {"flight_id", "seat"})
+)
 public class Booking {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "flight_id", nullable = false)
     @NonNull
     private Long flightId;
 
+    @Column(name = "passenger_id", nullable = false)
     @NonNull
     private Long passengerId;
 
-    private String serviceClass;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "service_class", nullable = false)
+    @NonNull
+    private ServiceClass serviceClass;
+
+    @Column(nullable = false)
     private String seat;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "flight_id", insertable = false, updatable = false)
+    private Flight flight;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "passenger_id", insertable = false, updatable = false)
+    private Passenger passenger;
 
     public Booking() {
     }
 
-    public Booking(Long id, Long flightId, Long passengerId, String serviceClass, String seat) {
+    public Booking(Long id, Long flightId, Long passengerId, ServiceClass serviceClass, String seat) {
         this.id = id;
         this.flightId = flightId;
         this.passengerId = passengerId;
@@ -35,11 +69,17 @@ public class Booking {
     public Long getPassengerId() { return passengerId; }
     public void setPassengerId(Long passengerId) { this.passengerId = passengerId; }
 
-    public String getServiceClass() { return serviceClass; }
-    public void setServiceClass(String serviceClass) { this.serviceClass = serviceClass; }
+    public ServiceClass getServiceClass() { return serviceClass; }
+    public void setServiceClass(ServiceClass serviceClass) { this.serviceClass = serviceClass; }
 
     public String getSeat() { return seat; }
     public void setSeat(String seat) { this.seat = seat; }
+
+    public Flight getFlight() { return flight; }
+    public void setFlight(Flight flight) { this.flight = flight; }
+
+    public Passenger getPassenger() { return passenger; }
+    public void setPassenger(Passenger passenger) { this.passenger = passenger; }
 
     @Override
     public String toString() {

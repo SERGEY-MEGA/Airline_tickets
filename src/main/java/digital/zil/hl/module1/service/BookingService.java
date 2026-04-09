@@ -2,6 +2,7 @@ package digital.zil.hl.module1.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Booking;
 import digital.zil.hl.module1.model.Flight;
 import digital.zil.hl.module1.repository.BookingRepository;
@@ -34,13 +35,13 @@ public class BookingService {
         return bookingRepository.findById(id);
     }
 
-    /**
-     * Бронирование места на рейс.
-     * Сервис проверяет, что рейс и пассажир существуют,
-     * затем передаёт вместимость в репозиторий, где в synchronized-блоке
-     * атомарно проверяется свободное место и вместимость рейса.
-     */
+    public List<Booking> getBookingsByFlightId(Long flightId) {
+        flightRepository.findById(flightId);
+        return bookingRepository.findByFlightId(flightId);
+    }
+
     public Booking saveBooking(Booking booking) {
+        validateBooking(booking);
         final Flight flight = flightRepository.findById(booking.getFlightId());
         passengerRepository.findById(booking.getPassengerId());
         return bookingRepository.save(booking, flight.getCapacity());
@@ -48,5 +49,23 @@ public class BookingService {
 
     public void deleteBooking(Long id) {
         bookingRepository.delete(id);
+    }
+
+    private void validateBooking(Booking booking) {
+        if (booking == null) {
+            throw new AirlineException("Данные бронирования обязательны");
+        }
+        if (booking.getFlightId() == null) {
+            throw new AirlineException("ID рейса обязателен");
+        }
+        if (booking.getPassengerId() == null) {
+            throw new AirlineException("ID пассажира обязателен");
+        }
+        if (booking.getServiceClass() == null) {
+            throw new AirlineException("Класс обслуживания обязателен");
+        }
+        if (booking.getSeat() == null || booking.getSeat().isBlank()) {
+            throw new AirlineException("Место не должно быть пустым");
+        }
     }
 }

@@ -2,17 +2,14 @@ package digital.zil.hl.module1.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import digital.zil.hl.module1.controller.exeption.AirlineException;
-import digital.zil.hl.module1.controller.dto.AvailabilityResponse;
+import digital.zil.hl.module1.controller.dto.FlightAvailabilityResponse;
+import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Flight;
 import digital.zil.hl.module1.repository.BookingRepository;
 import digital.zil.hl.module1.repository.FlightRepository;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class FlightService {
@@ -35,12 +32,13 @@ public class FlightService {
     }
 
     public Flight saveFlight(Flight flight) {
+        validateFlight(flight);
         return flightRepository.save(flight);
     }
 
-    /** Полное обновление рейса (например, изменить номер с SU100 на SU200) */
     public Flight updateFlight(Long id, Flight flight) {
-        return flightRepository.put(id, flight);
+        validateFlight(flight);
+        return flightRepository.update(id, flight);
     }
 
     public void deleteFlight(Long id) {
@@ -50,72 +48,78 @@ public class FlightService {
     /**
      * Возвращает доступность мест для конкретного рейса по его ID.
      */
-    public AvailabilityResponse getFlightAvailability(Long flightId) {
+    public FlightAvailabilityResponse getFlightAvailability(Long flightId) {
         Flight flight = flightRepository.findById(flightId);
-        int booked = (int) bookingRepository.countByFlightId(flightId);
-        int available = flight.getCapacity() - booked;
-
-        return new AvailabilityResponse(
-                flight.getId(),
-                flight.getFlightNumber(),
-                flight.getCapacity(),
-                booked,
-                available
-        );
+        return buildAvailabilityResponse(flight);
     }
 
     /**
      * Возвращает доступность мест по номеру рейса (например, "SU301").
      */
-    public AvailabilityResponse getFlightAvailabilityByNumber(String flightNumber) {
+    public FlightAvailabilityResponse getFlightAvailabilityByNumber(String flightNumber) {
         Flight flight = flightRepository.findByFlightNumber(flightNumber);
-        int booked = (int) bookingRepository.countByFlightId(flight.getId());
-        int available = flight.getCapacity() - booked;
-
-        return new AvailabilityResponse(
-                flight.getId(),
-                flight.getFlightNumber(),
-                flight.getCapacity(),
-                booked,
-                available
-        );
+        return buildAvailabilityResponse(flight);
     }
 
     /**
      * Возвращает доступность мест по ВСЕМ рейсам.
      */
-    public List<AvailabilityResponse> getAllFlightsAvailability() {
+    public List<FlightAvailabilityResponse> getAllFlightsAvailability() {
         return flightRepository.findAll().stream()
-                .map(flight -> {
-                    int booked = (int) bookingRepository.countByFlightId(flight.getId());
-                    int available = flight.getCapacity() - booked;
-                    return new AvailabilityResponse(
-                            flight.getId(),
-                            flight.getFlightNumber(),
-                            flight.getCapacity(),
-                            booked,
-                            available
-                    );
-                })
+                .map(this::buildAvailabilityResponse)
                 .toList();
     }
 
     /**
      * Возвращает список доступности для рейсов на конкретное направление и дату.
      */
-    public List<AvailabilityResponse> getFlightsAvailabilityByDestinationAndDate(String destination, LocalDate date) {
+    public List<FlightAvailabilityResponse> getFlightsAvailabilityByDestinationAndDate(String destination, LocalDate date) {
+        if (!hasText(destination)) {
+            throw new AirlineException("Направление рейса не должно быть пустым");
+        }
+        if (date == null) {
+            throw new AirlineException("Дата вылета обязательна");
+        }
+
         return flightRepository.findByDestinationAndDate(destination, date).stream()
-                .map(flight -> {
-                    int booked = (int) bookingRepository.countByFlightId(flight.getId());
-                    int available = flight.getCapacity() - booked;
-                    return new AvailabilityResponse(
-                            flight.getId(),
-                            flight.getFlightNumber(),
-                            flight.getCapacity(),
-                            booked,
-                            available
-                    );
-                })
+                .map(this::buildAvailabilityResponse)
                 .toList();
+    }
+
+    private FlightAvailabilityResponse buildAvailabilityResponse(Flight flight) {
+        int booked = (int) bookingRepository.countByFlightId(flight.getId());
+        int available = flight.getCapacity() - booked;
+
+        return new FlightAvailabilityResponse(
+                flight.getId(),
+                flight.getFlightNumber(),
+                flight.getDestination(),
+                flight.getDepartureDate(),
+                flight.getCapacity(),
+                booked,
+                available
+        );
+    }
+
+    private void validateFlight(Flight flight) {
+        if (flight == null) {
+            throw new AirlineException("Данные рейса обязательны");
+        }
+        if (!hasText(flight.getFlightNumber())) {
+            throw new AirlineException("Номер рейса не должен быть пустым");
+        }
+        if (!hasText(flight.getDestination())) {
+            throw new AirlineException("Направление рейса не должно быть пустым");
+        }
+        if (flight.getDepartureDate() == null) {
+            throw new AirlineException("Дата вылета обязательна");
+        }
+        if (flight.getCapacity() <= 0) {
+            throw new AirlineException("Вместимость рейса должна быть больше нуля");
+        }
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

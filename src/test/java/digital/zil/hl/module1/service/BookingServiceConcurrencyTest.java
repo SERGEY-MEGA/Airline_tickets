@@ -1,12 +1,13 @@
 package digital.zil.hl.module1.service;
 
-import digital.zil.hl.module1.controller.exeption.AirlineException;
+import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Booking;
 import digital.zil.hl.module1.model.Flight;
 import digital.zil.hl.module1.model.Passenger;
-import digital.zil.hl.module1.repository.BookingRepository;
-import digital.zil.hl.module1.repository.FlightRepository;
-import digital.zil.hl.module1.repository.PassengerRepository;
+import digital.zil.hl.module1.model.ServiceClass;
+import digital.zil.hl.module1.repository.memory.InMemoryBookingRepository;
+import digital.zil.hl.module1.repository.memory.InMemoryFlightRepository;
+import digital.zil.hl.module1.repository.memory.InMemoryPassengerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,16 +23,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BookingServiceConcurrencyTest {
 
     private BookingService bookingService;
-    private FlightRepository flightRepository;
-    private PassengerRepository passengerRepository;
-    private BookingRepository bookingRepository;
+    private InMemoryFlightRepository flightRepository;
+    private InMemoryPassengerRepository passengerRepository;
+    private InMemoryBookingRepository bookingRepository;
 
     @BeforeEach
     public void setup() {
-        flightRepository = new FlightRepository();
-        passengerRepository = new PassengerRepository();
-        bookingRepository = new BookingRepository();
+        flightRepository = new InMemoryFlightRepository();
+        passengerRepository = new InMemoryPassengerRepository();
+        bookingRepository = new InMemoryBookingRepository();
         bookingService = new BookingService(bookingRepository, flightRepository, passengerRepository);
+        bookingRepository.clear();
+        passengerRepository.clear();
+        flightRepository.clear();
     }
 
     @Test
@@ -56,7 +60,7 @@ public class BookingServiceConcurrencyTest {
             executor.submit(() -> {
                 try {
                     ready.await();
-                    Booking booking = new Booking(null, flightId, passengerId, "Economy", seat);
+                    Booking booking = new Booking(null, flightId, passengerId, ServiceClass.ECONOMY, seat);
                     bookingService.saveBooking(booking);
                     successCount.incrementAndGet();
                 } catch (AirlineException e) {

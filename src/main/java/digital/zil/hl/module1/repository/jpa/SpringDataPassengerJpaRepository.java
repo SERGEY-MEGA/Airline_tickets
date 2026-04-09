@@ -1,0 +1,7 @@
+package digital.zil.hl.module1.repository.jpa;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import digital.zil.hl.module1.model.Passenger;
+
+public interface SpringDataPassengerJpaRepository extends JpaRepository<Passenger, Long> {
+}

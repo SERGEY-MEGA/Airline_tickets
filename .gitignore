@@ -9,6 +9,9 @@ dist/
 
 # Compiled Java class files
 *.class
+build/
+.gradle/
+.gradle-home/
 
 # Compiled Python bytecode
 *.py[cod]
@@ -48,4 +51,3 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
-

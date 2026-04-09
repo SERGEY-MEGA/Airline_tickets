@@ -1,136 +1,281 @@
-# Система Бронирования Авиабилетов — Лабораторная работа 1
+# Авиакасса
 
-Дисциплина: **Высоконагруженные вычислительные системы**
+Учебный проект по дисциплине **«Высоконагруженные вычислительные системы»**.
 
-## Стек
-- Java 25 · Spring Boot 4 · Gradle
-- Хранилище: статические коллекции (`HashMap`) в памяти
+Проект реализует простую систему бронирования авиабилетов с двумя режимами работы:
 
----
+- `LAB1` — хранение данных в памяти через `static HashMap`
+- `LAB2` — хранение данных в PostgreSQL через Spring Data JPA
 
-## Что реализовано
+На момент адаптации в удалённом репозитории была доступна ветка `main`, поэтому именно она использована как фактическая основа вместо указанной в задании `feature/spring-boot-test`.
 
-| Сущность | Поля |
-|---|---|
-| **Flight** (Рейс) | `id`, `flightNumber`, `destination`, `departureDate`, `capacity` |
-| **Passenger** (Пассажир) | `id`, `fullName`, `passportData`, `contacts` |
-| **Booking** (Бронирование) | `id`, `flightId`, `passengerId`, `serviceClass`, `seat` |
+## Что делает проект
 
-### Структура проекта
-```
-src/main/java/digital/zil/hl/module1/
-├── model/          — Flight, Passenger, Booking (POJO, без Lombok)
-├── repository/     — FlightRepository, PassengerRepository, BookingRepository
-│                     (один класс на сущность, static HashMap, без интерфейсов)
-├── service/        — FlightService, PassengerService, BookingService
-└── controller/     — FlightController, PassengerController, BookingController
-    └── exeption/   — AirlineException, GlobalExceptionHandler
-```
+Система поддерживает три основные сущности:
 
----
+- `Flight` — рейс
+- `Passenger` — пассажир
+- `Booking` — бронирование
 
-## API
+Класс обслуживания хранится в `ServiceClass`:
 
-### Рейсы
-```
-GET    /flights                                       — список всех рейсов
-GET    /flights/{id}                                  — рейс по ID
-GET    /flights/{flightId}/availability               — остаток мест для рейса
-POST   /flights                                       — создать рейс
-PUT    /flights/{id}                                  — обновить рейс (в т.ч. номер)
-DELETE /flights/{id}                                  — удалить рейс
-```
+- `ECONOMY`
+- `BUSINESS`
+- `FIRST`
 
-### Пассажиры
-```
-GET    /passengers                  — список пассажиров
-GET    /passengers/{id}             — пассажир по ID
-POST   /passengers                  — зарегистрировать пассажира
-PUT    /passengers/{id}             — обновить данные пассажира
-DELETE /passengers/{id}             — удалить пассажира
+Реализованы бизнес-правила:
+
+- нельзя забронировать место на несуществующий рейс
+- нельзя забронировать место несуществующему пассажиру
+- нельзя занять уже занятое место на рейсе
+- нельзя превысить вместимость рейса
+- можно получить остаток свободных мест по направлению и дате
+- можно получить список бронирований по конкретному рейсу
+
+## Структура проекта
+
+```text
+src/main/java/digital/zil/hl/module1
+├── config
+├── controller
+│   ├── dto
+│   └── exception
+├── model
+├── repository
+│   ├── memory
+│   └── jpa
+└── service
 ```
 
-### Бронирования
-```
-GET    /bookings                    — список бронирований
-GET    /bookings/{id}               — бронирование по ID
-POST   /bookings                    — забронировать место
-DELETE /bookings/{id}               — отменить бронирование
-```
+### Слои
 
----
+- `controller` — REST API
+- `service` — бизнес-логика и базовая валидация
+- `repository` — работа с хранилищем
+- `model` — доменные сущности
 
-## Запуск
+## LAB1
+
+### Как работает
+
+- активный профиль по умолчанию: `lab1`
+- репозитории работают на `static HashMap`
+- стартовые тестовые данные загружаются через `Lab1DataInitializer`
+
+### Запуск LAB1
 
 ```bash
 ./gradlew bootRun
 ```
-Приложение запустится на `http://localhost:8080`.
 
-**Запуск тестов:**
+Приложение стартует на:
+
+```text
+http://localhost:8080
+```
+
+### Что уже есть после запуска LAB1
+
+Будут созданы тестовые данные:
+
+- рейсы
+- пассажиры
+- бронирования
+
+Поэтому сразу после запуска можно открывать `GET /flights`, `GET /passengers`, `GET /bookings`.
+
+## LAB2
+
+### Как работает
+
+- используется профиль `lab2`
+- репозитории переключаются на Spring Data JPA
+- данные хранятся в PostgreSQL
+- схема создаётся Hibernate
+- тестовые данные подгружаются из `src/main/resources/data.sql`
+
+### Запуск PostgreSQL
+
+```bash
+docker compose up -d postgres
+```
+
+Проверка контейнера:
+
+```bash
+docker compose ps
+```
+
+Остановка:
+
+```bash
+docker compose down
+```
+
+### Запуск LAB2
+
+```bash
+./gradlew bootRun --args='--spring.profiles.active=lab2'
+```
+
+### Параметры подключения к БД
+
+По умолчанию используются значения:
+
+- `DB_URL=jdbc:postgresql://localhost:5432/airline_tickets`
+- `DB_USERNAME=postgres`
+- `DB_PASSWORD=postgres`
+
+При необходимости их можно переопределить через переменные окружения.
+
+## API
+
+### Рейсы
+
+```text
+GET    /flights
+GET    /flights/{id}
+GET    /flights/{flightId}/availability
+GET    /flights/availability
+GET    /flights/free-seats?destination={destination}&date={yyyy-MM-dd}
+GET    /flights/number/{flightNumber}/availability
+POST   /flights
+PUT    /flights/{id}
+DELETE /flights/{id}
+```
+
+### Пассажиры
+
+```text
+GET    /passengers
+GET    /passengers/{id}
+POST   /passengers
+PUT    /passengers/{id}
+DELETE /passengers/{id}
+```
+
+### Бронирования
+
+```text
+GET    /bookings
+GET    /bookings?flightId={flightId}
+GET    /bookings/{id}
+POST   /bookings
+DELETE /bookings/{id}
+```
+
+## Примеры HTTP-запросов
+
+### Получить все рейсы
+
+```bash
+curl http://localhost:8080/flights
+```
+
+### Создать рейс
+
+```bash
+curl -X POST http://localhost:8080/flights \
+  -H "Content-Type: application/json" \
+  -d '{
+    "flightNumber": "SU777",
+    "destination": "Novosibirsk",
+    "departureDate": "2026-06-15",
+    "capacity": 10
+  }'
+```
+
+### Создать пассажира
+
+```bash
+curl -X POST http://localhost:8080/passengers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fullName": "Мария Смирнова",
+    "passportData": "5555 666777",
+    "contacts": "maria@example.com"
+  }'
+```
+
+### Создать бронирование
+
+```bash
+curl -X POST http://localhost:8080/bookings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "flightId": 1,
+    "passengerId": 1,
+    "serviceClass": "ECONOMY",
+    "seat": "5A"
+  }'
+```
+
+### Получить остаток свободных мест по направлению и дате
+
+```bash
+curl "http://localhost:8080/flights/free-seats?destination=Moscow&date=2026-06-10"
+```
+
+### Получить бронирования по рейсу
+
+```bash
+curl "http://localhost:8080/bookings?flightId=1"
+```
+
+## Что показать преподавателю
+
+### Для LAB1
+
+Показать:
+
+- что используется профиль `lab1`
+- что репозитории лежат в `repository/memory`
+- что данные хранятся в `static HashMap`
+- что API работает без БД
+- что есть стартовые тестовые данные
+- что ограничение по местам и проверка занятых мест вынесены в слой сервисов и репозиториев
+
+Удобная демонстрация:
+
+1. `GET /flights`
+2. `GET /passengers`
+3. `GET /bookings`
+4. `GET /flights/free-seats?...`
+5. `POST /bookings`
+6. повторный `POST /bookings` на то же место, чтобы показать ошибку
+
+### Для LAB2
+
+Показать:
+
+- `docker-compose.yml`
+- профиль `lab2`
+- JPA-аннотации в моделях
+- репозитории в `repository/jpa`
+- `data.sql`
+- запуск через PostgreSQL
+- тот же API без изменения бизнес-смысла
+
+Удобная демонстрация:
+
+1. `docker compose up -d postgres`
+2. `./gradlew bootRun --args='--spring.profiles.active=lab2'`
+3. `GET /flights`
+4. `GET /bookings`
+5. `GET /flights/free-seats?...`
+6. `POST /bookings`
+
+## Проверка проекта
+
+Запуск тестов:
+
 ```bash
 ./gradlew test --no-daemon
 ```
 
----
+## Полезные замечания
 
-## Демонстрация (curl-команды)
-
-### 1. Создать рейс
-```bash
-curl -X POST http://localhost:8080/flights \
-  -H "Content-Type: application/json" \
-  -d '{"flightNumber":"SU100","destination":"Moscow","departureDate":"2026-03-20","capacity":2}'
-```
-
-### 2. Изменить номер рейса SU100 → SU200
-```bash
-# PUT /flights/{id} — полное обновление рейса с ID = 1
-curl -X PUT http://localhost:8080/flights/1 \
-  -H "Content-Type: application/json" \
-  -d '{"flightNumber":"SU200","destination":"Moscow","departureDate":"2026-03-20","capacity":2}'
-```
-> Метод `put()` в `FlightRepository` заменяет объект целиком, сохраняя тот же `id`.
-
-### 3. Зарегистрировать пассажира
-```bash
-curl -X POST http://localhost:8080/passengers \
-  -H "Content-Type: application/json" \
-  -d '{"fullName":"Иван Иванов","passportData":"1234 567890","contacts":"test@test.com"}'
-```
-
-### 4. Забронировать место
-```bash
-curl -X POST http://localhost:8080/bookings \
-  -H "Content-Type: application/json" \
-  -d '{"flightId":1,"passengerId":1,"serviceClass":"Economy","seat":"1A"}'
-```
-
-### 5. Проверить остаток свободных мест
-```bash
-curl "http://localhost:8080/flights/1/availability"
-```
-Ожидаемый ответ включает поля `capacity`, `bookedSeats` и `availableSeats`.
-
----
-
-## Ключевой момент для "Высоконагруженных систем"
-
-**Проблема:** Если два пользователя одновременно зайдут на последнее место или превысят вместимость рейса — без защиты оба запроса "пройдут" в промежутке между проверкой и записью (Race Condition).
-
-**Решение (`BookingRepository.java`):**
-```java
-public synchronized Booking save(Booking booking, int flightCapacity) {
-    // Обе проверки выполняются атомарно — пока один поток внутри,
-    // все остальные ждут у входа.
-    if (countByFlightId(booking.getFlightId()) >= flightCapacity) { ... }
-    if (isSeatTaken(booking.getFlightId(), booking.getSeat()))     { ... }
-    bookings.put(...);
-    return booking;
-}
-```
-
-Аналог в реальной БД — транзакция с `SELECT ... FOR UPDATE` или уровень изоляции `SERIALIZABLE`.
-
-**Тест** (`BookingServiceConcurrencyTest`): 15 потоков одновременно бронируют места на рейс вместимостью 10.
-Ровно 10 проходят, 5 получают `AirlineException`. Overoverbooking исключён.
+- в `LAB1` БД не используется
+- в `LAB2` бизнес-логика сохранена, меняется только способ хранения
+- проект специально сделан без security, frontend и лишних библиотек
+- валидация базовая и учебно-понятная, без перегрузки архитектуры

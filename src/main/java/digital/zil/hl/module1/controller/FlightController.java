@@ -2,16 +2,20 @@ package digital.zil.hl.module1.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import digital.zil.hl.module1.controller.dto.AvailabilityResponse;
+import digital.zil.hl.module1.controller.dto.FlightAvailabilityResponse;
+import digital.zil.hl.module1.controller.dto.FlightRequest;
+import digital.zil.hl.module1.controller.dto.FlightResponse;
 import digital.zil.hl.module1.model.Flight;
 import digital.zil.hl.module1.service.FlightService;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @RestController
+@RequestMapping("/flights")
 public class FlightController {
 
     private final FlightService flightService;
@@ -21,72 +25,74 @@ public class FlightController {
         this.flightService = flightService;
     }
 
-    @GetMapping("/flights")
-    public List<Flight> getFlights() {
-        return flightService.getAllFlights();
+    @GetMapping
+    public List<FlightResponse> getFlights() {
+        return flightService.getAllFlights().stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    @GetMapping("/flights/{id}")
-    public Flight getFlightById(@PathVariable Long id) {
-        return flightService.getFlightById(id);
+    @GetMapping("/{id}")
+    public FlightResponse getFlightById(@PathVariable Long id) {
+        return toResponse(flightService.getFlightById(id));
     }
 
-    /**
-     * Выводит информацию о рейсе и остаток свободных мест.
-     * Пример: GET /flights/6/availability
-     */
-    @GetMapping("/flights/{flightId}/availability")
-    public AvailabilityResponse getFlightAvailability(@PathVariable Long flightId) {
+    @GetMapping("/{flightId}/availability")
+    public FlightAvailabilityResponse getFlightAvailability(@PathVariable Long flightId) {
         return flightService.getFlightAvailability(flightId);
     }
 
-    /**
-     * Выводит остаток свободных мест по ВСЕМ рейсам.
-     * Пример: GET /flights/availability
-     */
-    @GetMapping("/flights/availability")
-    public List<AvailabilityResponse> getAllAvailability() {
+    @GetMapping("/availability")
+    public List<FlightAvailabilityResponse> getAllAvailability() {
         return flightService.getAllFlightsAvailability();
     }
 
-    /**
-     * Поиск доступности мест на конкретное направление и дату.
-     * Пример: GET /flights/availability/search?destination=Moscow&date=2026-03-20
-     */
-    @GetMapping("/flights/availability/search")
-    public List<AvailabilityResponse> searchAvailability(
+    @GetMapping("/free-seats")
+    public List<FlightAvailabilityResponse> searchAvailability(
             @RequestParam String destination,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return flightService.getFlightsAvailabilityByDestinationAndDate(destination, date);
     }
 
-    /**
-     * Выводит остаток свободных мест по номеру рейса.
-     * Пример: GET /flights/number/SU301/availability
-     */
-    @GetMapping("/flights/number/{flightNumber}/availability")
-    public AvailabilityResponse getAvailabilityByNumber(@PathVariable String flightNumber) {
+    @GetMapping("/number/{flightNumber}/availability")
+    public FlightAvailabilityResponse getAvailabilityByNumber(@PathVariable String flightNumber) {
         return flightService.getFlightAvailabilityByNumber(flightNumber);
     }
 
-    @PostMapping("/flights")
-    public Flight saveFlight(@RequestBody Flight flight) {
-        return flightService.saveFlight(flight);
+    @PostMapping
+    public ResponseEntity<FlightResponse> saveFlight(@RequestBody FlightRequest request) {
+        Flight savedFlight = flightService.saveFlight(toModel(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(savedFlight));
     }
 
-    /**
-     * Полное обновление рейса по ID.
-     * Пример: изменить номер рейса SU100 → SU200:
-     * PUT /flights/1
-     * Body: { "flightNumber": "SU200", "destination": "Moscow", "departureDate": "2026-03-20", "capacity": 150 }
-     */
-    @PutMapping("/flights/{id}")
-    public Flight updateFlight(@PathVariable Long id, @RequestBody Flight flight) {
-        return flightService.updateFlight(id, flight);
+    @PutMapping("/{id}")
+    public FlightResponse updateFlight(@PathVariable Long id, @RequestBody FlightRequest request) {
+        return toResponse(flightService.updateFlight(id, toModel(request)));
     }
 
-    @DeleteMapping("/flights/{id}")
-    public void deleteFlight(@PathVariable Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFlight(@PathVariable Long id) {
         flightService.deleteFlight(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    private Flight toModel(FlightRequest request) {
+        return new Flight(
+                null,
+                request.getFlightNumber(),
+                request.getDestination(),
+                request.getDepartureDate(),
+                request.getCapacity()
+        );
+    }
+
+    private FlightResponse toResponse(Flight flight) {
+        return new FlightResponse(
+                flight.getId(),
+                flight.getFlightNumber(),
+                flight.getDestination(),
+                flight.getDepartureDate(),
+                flight.getCapacity()
+        );
     }
 }

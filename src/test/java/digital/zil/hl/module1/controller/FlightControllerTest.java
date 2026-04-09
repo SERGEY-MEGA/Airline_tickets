@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import digital.zil.hl.module1.Application;
@@ -14,7 +15,6 @@ import digital.zil.hl.module1.repository.FlightRepository;
 import digital.zil.hl.module1.repository.BookingRepository;
 import digital.zil.hl.module1.repository.PassengerRepository;
 import digital.zil.hl.module1.model.Flight;
-import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 
@@ -24,10 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
+@ActiveProfiles("lab1")
 public class FlightControllerTest {
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private MockMvc mvc;
@@ -55,7 +53,7 @@ public class FlightControllerTest {
         mvc.perform(post("/flights")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.flightNumber").value("SU100"));
     }
 
@@ -80,6 +78,8 @@ public class FlightControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flightId").value(flight.getId()))
                 .andExpect(jsonPath("$.flightNumber").value("SU101"))
+                .andExpect(jsonPath("$.destination").value("London"))
+                .andExpect(jsonPath("$.departureDate").value("2027-04-01"))
                 .andExpect(jsonPath("$.capacity").value(200))
                 .andExpect(jsonPath("$.bookedSeats").value(0))
                 .andExpect(jsonPath("$.availableSeats").value(200));

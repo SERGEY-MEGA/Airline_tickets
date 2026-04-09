@@ -20,6 +20,9 @@ repositories {
 dependencies {
     // Основной стартер
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    runtimeOnly 'org.postgresql:postgresql'
 
     // БАЗОВЫЙ тестовый стартер (JUnit 5, AssertJ, Mockito)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
