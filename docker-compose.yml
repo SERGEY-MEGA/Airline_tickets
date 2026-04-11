@@ -1,20 +1,48 @@
 services:
+  # LAB3: контейнер с Spring Boot приложением.
+  app:
+    # Собираем приложение из Dockerfile в корне проекта.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: airline-tickets-app
+    environment:
+      # Профиль lab3 включает PostgreSQL и Flyway migrations.
+      SPRING_PROFILES_ACTIVE: lab3
+      # Внутри docker compose к PostgreSQL обращаемся по имени сервиса postgres.
+      DB_URL: jdbc:postgresql://postgres:5432/airline_tickets
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    ports:
+      # По умолчанию приложение открывается на localhost:8080.
+      # Если 8080 занят, можно запустить так: APP_PORT=8083 docker compose up -d --build
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      # Приложение стартует только после того, как PostgreSQL станет healthy.
+      postgres:
+        condition: service_healthy
+
+  # LAB2/LAB3: контейнер с PostgreSQL.
   postgres:
     image: postgres:17-alpine
     container_name: airline-tickets-postgres
     environment:
+      # Учебные параметры БД для локального запуска.
       POSTGRES_DB: airline_tickets
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
+      # Данные PostgreSQL сохраняются между перезапусками контейнера.
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
+      # healthcheck нужен, чтобы app не стартовал раньше готовности БД.
       test: ["CMD-SHELL", "pg_isready -U postgres -d airline_tickets"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
+  # Именованный volume для хранения данных PostgreSQL.
   postgres_data:

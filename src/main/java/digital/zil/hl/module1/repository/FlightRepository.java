@@ -5,6 +5,10 @@ import digital.zil.hl.module1.model.Flight;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Общий контракт репозитория рейсов.
+ * Благодаря интерфейсу сервису всё равно, где лежат данные: в HashMap или в PostgreSQL.
+ */
 public interface FlightRepository {
 
     List<Flight> findAll();
@@ -13,7 +17,11 @@ public interface FlightRepository {
 
     Flight findByFlightNumber(String flightNumber);
 
-    List<Flight> findByDestinationAndDate(String destination, LocalDate departureDate);
+    /**
+     * Ищет рейсы по гибким фильтрам.
+     * Можно передать только destination, только departureDate или оба параметра сразу.
+     */
+    List<Flight> findByFilters(String destination, LocalDate departureDate);
 
     Flight save(Flight flight);
 

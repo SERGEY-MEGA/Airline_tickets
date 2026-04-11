@@ -11,6 +11,10 @@ import digital.zil.hl.module1.repository.FlightRepository;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Сервис для работы с рейсами.
+ * Здесь лежит бизнес-логика рейсов: валидация и расчёт свободных мест.
+ */
 @Service
 public class FlightService {
 
@@ -23,24 +27,39 @@ public class FlightService {
         this.bookingRepository = bookingRepository;
     }
 
+    /**
+     * Возвращает все рейсы без дополнительной обработки.
+     */
     public List<Flight> getAllFlights() {
         return flightRepository.findAll();
     }
 
+    /**
+     * Возвращает один рейс по id.
+     */
     public Flight getFlightById(Long id) {
         return flightRepository.findById(id);
     }
 
+    /**
+     * Создаёт рейс после проверки обязательных полей.
+     */
     public Flight saveFlight(Flight flight) {
         validateFlight(flight);
         return flightRepository.save(flight);
     }
 
+    /**
+     * Обновляет существующий рейс.
+     */
     public Flight updateFlight(Long id, Flight flight) {
         validateFlight(flight);
         return flightRepository.update(id, flight);
     }
 
+    /**
+     * Удаляет рейс по id.
+     */
     public void deleteFlight(Long id) {
         flightRepository.delete(id);
     }
@@ -71,21 +90,26 @@ public class FlightService {
     }
 
     /**
-     * Возвращает список доступности для рейсов на конкретное направление и дату.
+     * Возвращает список доступности рейсов.
+     * Можно фильтровать:
+     * только по направлению,
+     * только по дате,
+     * или сразу по двум параметрам.
      */
-    public List<FlightAvailabilityResponse> getFlightsAvailabilityByDestinationAndDate(String destination, LocalDate date) {
-        if (!hasText(destination)) {
-            throw new AirlineException("Направление рейса не должно быть пустым");
-        }
-        if (date == null) {
-            throw new AirlineException("Дата вылета обязательна");
+    public List<FlightAvailabilityResponse> getFlightsAvailabilityByFilters(String destination, LocalDate date) {
+        if (!hasText(destination) && date == null) {
+            throw new AirlineException("Нужно указать направление рейса, дату вылета или оба параметра");
         }
 
-        return flightRepository.findByDestinationAndDate(destination, date).stream()
+        return flightRepository.findByFilters(destination, date).stream()
                 .map(this::buildAvailabilityResponse)
                 .toList();
     }
 
+    /**
+     * Собирает DTO с количеством занятых и свободных мест.
+     * Формула простая: capacity - bookedSeats.
+     */
     private FlightAvailabilityResponse buildAvailabilityResponse(Flight flight) {
         int booked = (int) bookingRepository.countByFlightId(flight.getId());
         int available = flight.getCapacity() - booked;
@@ -101,6 +125,9 @@ public class FlightService {
         );
     }
 
+    /**
+     * Проверяет обязательные поля рейса перед сохранением или обновлением.
+     */
     private void validateFlight(Flight flight) {
         if (flight == null) {
             throw new AirlineException("Данные рейса обязательны");
@@ -119,6 +146,9 @@ public class FlightService {
         }
     }
 
+    /**
+     * Маленькая вспомогательная проверка для строковых полей.
+     */
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
     }

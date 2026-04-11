@@ -11,8 +11,11 @@ import java.util.List;
 
 import static java.lang.String.format;
 
+/**
+ * Репозиторий LAB2 для пассажиров.
+ */
 @Repository
-@Profile("lab2")
+@Profile({"lab2", "lab3"})
 @Transactional(readOnly = true)
 public class JpaPassengerRepository implements PassengerRepository {
 

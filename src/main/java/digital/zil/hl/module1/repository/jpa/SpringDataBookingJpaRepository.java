@@ -5,6 +5,9 @@ import digital.zil.hl.module1.model.Booking;
 
 import java.util.List;
 
+/**
+ * Spring Data JPA репозиторий для таблицы bookings.
+ */
 public interface SpringDataBookingJpaRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByFlightId(Long flightId);

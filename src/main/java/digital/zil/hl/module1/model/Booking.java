@@ -14,6 +14,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import org.springframework.lang.NonNull;
 
+/**
+ * Сущность бронирования.
+ * Хранит связь между рейсом и пассажиром, а также место и класс обслуживания.
+ */
 @Entity
 @Table(
         name = "bookings",
@@ -41,6 +45,10 @@ public class Booking {
     @Column(nullable = false)
     private String seat;
 
+    /**
+     * Связь с рейсом для LAB2.
+     * Поля flightId/passengerId остаются простыми и понятными для LAB1.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "flight_id", insertable = false, updatable = false)
     private Flight flight;

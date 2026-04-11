@@ -13,6 +13,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Сущность рейса.
+ * В LAB1 живёт в HashMap, в LAB2 хранится в таблице flights.
+ */
 @Entity
 @Table(name = "flights")
 public class Flight {
@@ -36,6 +40,10 @@ public class Flight {
     @Column(nullable = false)
     private int capacity;
 
+    /**
+     * Связанные бронирования.
+     * В коде сервиса мы не обязаны использовать это поле, но связь полезна для JPA-модели.
+     */
     @OneToMany(mappedBy = "flight")
     private List<Booking> bookings = new ArrayList<>();
 

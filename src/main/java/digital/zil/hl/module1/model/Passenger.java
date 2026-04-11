@@ -12,6 +12,9 @@ import org.springframework.lang.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Сущность пассажира.
+ */
 @Entity
 @Table(name = "passengers")
 public class Passenger {
@@ -31,6 +34,9 @@ public class Passenger {
     @Column
     private String contacts;
 
+    /**
+     * Связанные бронирования пассажира.
+     */
     @OneToMany(mappedBy = "passenger")
     private List<Booking> bookings = new ArrayList<>();
 

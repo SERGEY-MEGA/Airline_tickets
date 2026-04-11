@@ -2,6 +2,10 @@ package digital.zil.hl.module1.controller.dto;
 
 import java.time.LocalDate;
 
+/**
+ * DTO для дополнительной задачи.
+ * Хранит информацию о занятых и свободных местах по рейсу.
+ */
 public class FlightAvailabilityResponse {
 
     private Long flightId;

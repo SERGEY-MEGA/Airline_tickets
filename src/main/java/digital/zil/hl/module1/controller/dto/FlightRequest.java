@@ -2,6 +2,9 @@ package digital.zil.hl.module1.controller.dto;
 
 import java.time.LocalDate;
 
+/**
+ * DTO для создания или обновления рейса.
+ */
 public class FlightRequest {
 
     private String flightNumber;

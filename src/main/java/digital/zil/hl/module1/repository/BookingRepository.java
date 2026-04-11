@@ -4,6 +4,9 @@ import digital.zil.hl.module1.model.Booking;
 
 import java.util.List;
 
+/**
+ * Общий контракт репозитория бронирований.
+ */
 public interface BookingRepository {
 
     List<Booking> findAll();

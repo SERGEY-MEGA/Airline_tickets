@@ -30,5 +30,11 @@ Content-Type: application/json
   "seat": "5A"
 }
 
+### Получить свободные места только по направлению
+GET http://localhost:8080/flights/free-seats?destination=Moscow
+
+### Получить свободные места только по дате
+GET http://localhost:8080/flights/free-seats?date=2026-06-10
+
 ### Получить свободные места по направлению и дате
 GET http://localhost:8080/flights/free-seats?destination=Moscow&date=2026-06-10

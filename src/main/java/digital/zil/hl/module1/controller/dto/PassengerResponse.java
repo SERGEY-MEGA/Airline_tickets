@@ -1,5 +1,8 @@
 package digital.zil.hl.module1.controller.dto;
 
+/**
+ * DTO ответа по пассажиру.
+ */
 public class PassengerResponse {
 
     private Long id;

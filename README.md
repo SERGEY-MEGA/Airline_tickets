@@ -6,6 +6,7 @@
 
 - `LAB1` — хранение данных в памяти через `static HashMap`
 - `LAB2` — хранение данных в PostgreSQL через Spring Data JPA
+- `LAB3` — контейнеризация приложения и БД через Docker Compose, схема и данные через Flyway migrations
 
 На момент адаптации в удалённом репозитории была доступна ветка `main`, поэтому именно она использована как фактическая основа вместо указанной в задании `feature/spring-boot-test`.
 
@@ -128,6 +129,49 @@ docker compose down
 
 При необходимости их можно переопределить через переменные окружения.
 
+## LAB3
+
+### Как работает
+
+- приложение запускается в Docker-контейнере
+- PostgreSQL запускается в Docker-контейнере
+- профиль приложения: `lab3`
+- схема БД создаётся из `src/main/resources/db/migration/V1__create_airline_schema.sql`
+- тестовые данные добавляются из `src/main/resources/db/migration/V2__insert_test_data.sql`
+- миграции запускает Flyway
+
+### Запуск LAB3
+
+Обычный запуск на порту `8080`:
+
+```bash
+docker compose up -d --build
+```
+
+Если порт `8080` занят, можно запустить на другом внешнем порту, например `8083`:
+
+```bash
+APP_PORT=8083 docker compose up -d --build
+```
+
+Проверка контейнеров:
+
+```bash
+docker compose ps
+```
+
+Проверка Flyway-миграций:
+
+```bash
+docker compose exec -T postgres psql -U postgres -d airline_tickets -c "select installed_rank, version, description, success from flyway_schema_history order by installed_rank;"
+```
+
+Остановка стенда:
+
+```bash
+docker compose down
+```
+
 ## API
 
 ### Рейсы
@@ -138,6 +182,8 @@ GET    /flights/{id}
 GET    /flights/{flightId}/availability
 GET    /flights/availability
 GET    /flights/free-seats?destination={destination}&date={yyyy-MM-dd}
+GET    /flights/free-seats?destination={destination}
+GET    /flights/free-seats?date={yyyy-MM-dd}
 GET    /flights/number/{flightNumber}/availability
 POST   /flights
 PUT    /flights/{id}
@@ -216,6 +262,18 @@ curl -X POST http://localhost:8080/bookings \
 curl "http://localhost:8080/flights/free-seats?destination=Moscow&date=2026-06-10"
 ```
 
+### Получить остаток свободных мест только по направлению
+
+```bash
+curl "http://localhost:8080/flights/free-seats?destination=Moscow"
+```
+
+### Получить остаток свободных мест только по дате
+
+```bash
+curl "http://localhost:8080/flights/free-seats?date=2026-06-10"
+```
+
 ### Получить бронирования по рейсу
 
 ```bash
@@ -265,6 +323,27 @@ curl "http://localhost:8080/bookings?flightId=1"
 5. `GET /flights/free-seats?...`
 6. `POST /bookings`
 
+### Для LAB3
+
+Показать:
+
+- `Dockerfile`
+- `docker-compose.yml`
+- профиль `lab3`
+- папку `src/main/resources/db/migration`
+- таблицу `flyway_schema_history`
+- что приложение и PostgreSQL работают как два контейнера
+
+Удобная демонстрация:
+
+1. `docker compose up -d --build`
+2. `docker compose ps`
+3. открыть `Dockerfile`
+4. открыть `src/main/resources/db/migration`
+5. выполнить `GET /flights`
+6. выполнить `GET /flights/free-seats?destination=Moscow&date=2026-06-10`
+7. показать `flyway_schema_history`
+
 ## Проверка проекта
 
 Запуск тестов:
@@ -277,5 +356,6 @@ curl "http://localhost:8080/bookings?flightId=1"
 
 - в `LAB1` БД не используется
 - в `LAB2` бизнес-логика сохранена, меняется только способ хранения
+- в `LAB3` бизнес-логика тоже не меняется, добавляется контейнеризация и миграции БД
 - проект специально сделан без security, frontend и лишних библиотек
 - валидация базовая и учебно-понятная, без перегрузки архитектуры

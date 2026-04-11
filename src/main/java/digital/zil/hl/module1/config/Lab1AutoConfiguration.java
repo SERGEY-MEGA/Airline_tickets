@@ -8,6 +8,11 @@ import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerA
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+/**
+ * В профиле lab1 база данных не нужна.
+ * Этот класс отключает JDBC и JPA автоконфигурацию, чтобы приложение
+ * работало только с in-memory репозиториями на HashMap.
+ */
 @Configuration
 @Profile("lab1")
 @EnableAutoConfiguration(exclude = {

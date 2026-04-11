@@ -16,6 +16,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.String.format;
 
+/**
+ * Репозиторий LAB1 для рейсов.
+ * Хранит данные в static HashMap и работает без базы данных.
+ */
 @Repository
 @Profile("lab1")
 public class InMemoryFlightRepository implements FlightRepository {
@@ -28,6 +32,9 @@ public class InMemoryFlightRepository implements FlightRepository {
     private static final AtomicLong ID_COUNTER = new AtomicLong(1);
 
     @Override
+    /**
+     * Возвращает копию списка, чтобы внешние слои не работали с внутренней коллекцией напрямую.
+     */
     public List<Flight> findAll() {
         return new ArrayList<>(FLIGHTS.values());
     }
@@ -50,11 +57,17 @@ public class InMemoryFlightRepository implements FlightRepository {
     }
 
     @Override
-    public List<Flight> findByDestinationAndDate(@NonNull String destination, @NonNull LocalDate departureDate) {
+    /**
+     * В LAB1 фильтрация выполняется вручную по данным из HashMap.
+     */
+    public List<Flight> findByFilters(String destination, LocalDate departureDate) {
         List<Flight> result = new ArrayList<>();
         for (Flight flight : FLIGHTS.values()) {
-            if (flight.getDestination().equalsIgnoreCase(destination)
-                    && flight.getDepartureDate().equals(departureDate)) {
+            boolean matchesDestination = destination == null || destination.isBlank()
+                    || flight.getDestination().equalsIgnoreCase(destination);
+            boolean matchesDate = departureDate == null || flight.getDepartureDate().equals(departureDate);
+
+            if (matchesDestination && matchesDate) {
                 result.add(flight);
             }
         }
@@ -62,6 +75,9 @@ public class InMemoryFlightRepository implements FlightRepository {
     }
 
     @Override
+    /**
+     * Сохраняет новый рейс и вручную назначает id, как это делала бы база данных.
+     */
     public Flight save(@NonNull Flight flight) {
         for (Flight savedFlight : FLIGHTS.values()) {
             if (savedFlight.getFlightNumber().equalsIgnoreCase(flight.getFlightNumber())) {
@@ -75,6 +91,9 @@ public class InMemoryFlightRepository implements FlightRepository {
     }
 
     @Override
+    /**
+     * Полностью заменяет данные рейса по его id.
+     */
     public Flight update(Long id, @NonNull Flight flight) {
         if (!FLIGHTS.containsKey(id)) {
             throw new AirlineException(format(FLIGHT_NOT_FOUND_MSG, id));

@@ -1,5 +1,8 @@
 package digital.zil.hl.module1.controller.dto;
 
+/**
+ * DTO для создания или обновления пассажира.
+ */
 public class PassengerRequest {
 
     private String fullName;

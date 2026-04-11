@@ -12,8 +12,12 @@ import java.util.List;
 
 import static java.lang.String.format;
 
+/**
+ * Репозиторий LAB2 для рейсов.
+ * Прячет внутри Spring Data JPA и оставляет сервису тот же интерфейс, что и в LAB1.
+ */
 @Repository
-@Profile("lab2")
+@Profile({"lab2", "lab3"})
 @Transactional(readOnly = true)
 public class JpaFlightRepository implements FlightRepository {
 
@@ -45,8 +49,23 @@ public class JpaFlightRepository implements FlightRepository {
     }
 
     @Override
-    public List<Flight> findByDestinationAndDate(String destination, LocalDate departureDate) {
-        return repository.findByDestinationIgnoreCaseAndDepartureDate(destination, departureDate);
+    /**
+     * В LAB2 выборка делается через JPA:
+     * по направлению,
+     * по дате,
+     * или сразу по двум фильтрам.
+     */
+    public List<Flight> findByFilters(String destination, LocalDate departureDate) {
+        boolean hasDestination = destination != null && !destination.isBlank();
+        boolean hasDate = departureDate != null;
+
+        if (hasDestination && hasDate) {
+            return repository.findByDestinationIgnoreCaseAndDepartureDate(destination, departureDate);
+        }
+        if (hasDestination) {
+            return repository.findByDestinationIgnoreCase(destination);
+        }
+        return repository.findByDepartureDate(departureDate);
     }
 
     @Override

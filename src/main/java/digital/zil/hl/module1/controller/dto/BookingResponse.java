@@ -2,6 +2,10 @@ package digital.zil.hl.module1.controller.dto;
 
 import digital.zil.hl.module1.model.ServiceClass;
 
+/**
+ * DTO ответа по бронированию.
+ * Используется, чтобы наружу отдавать только нужные поля.
+ */
 public class BookingResponse {
 
     private Long id;

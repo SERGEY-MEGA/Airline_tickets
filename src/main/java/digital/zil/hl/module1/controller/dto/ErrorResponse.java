@@ -1,5 +1,8 @@
 package digital.zil.hl.module1.controller.dto;
 
+/**
+ * Простой DTO для текста ошибки.
+ */
 public class ErrorResponse {
 
     private String error;

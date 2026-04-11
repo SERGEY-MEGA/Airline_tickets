@@ -13,6 +13,10 @@ import digital.zil.hl.module1.service.PassengerService;
 
 import java.time.LocalDate;
 
+/**
+ * Заполняет приложение тестовыми данными при старте LAB1.
+ * Нужен для быстрой демонстрации без ручного создания рейсов и пассажиров.
+ */
 @Component
 @Profile("lab1")
 public class Lab1DataInitializer implements CommandLineRunner {
@@ -32,7 +36,11 @@ public class Lab1DataInitializer implements CommandLineRunner {
     }
 
     @Override
+    /**
+     * Создаёт стартовые рейсы, пассажиров и бронирования один раз при запуске.
+     */
     public void run(String... args) {
+        // Если данные уже есть, повторно ничего не создаём.
         if (!flightService.getAllFlights().isEmpty()) {
             return;
         }

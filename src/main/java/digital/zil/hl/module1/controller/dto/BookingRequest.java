@@ -2,6 +2,10 @@ package digital.zil.hl.module1.controller.dto;
 
 import digital.zil.hl.module1.model.ServiceClass;
 
+/**
+ * DTO для создания бронирования.
+ * Это структура JSON, которую клиент отправляет в POST /bookings.
+ */
 public class BookingRequest {
 
     private Long flightId;

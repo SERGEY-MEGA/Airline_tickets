@@ -15,6 +15,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.String.format;
 
+/**
+ * Репозиторий LAB1 для пассажиров.
+ */
 @Repository
 @Profile("lab1")
 public class InMemoryPassengerRepository implements PassengerRepository {

@@ -11,6 +11,10 @@ import digital.zil.hl.module1.repository.PassengerRepository;
 
 import java.util.List;
 
+/**
+ * Сервис бронирований.
+ * Здесь находятся основные проверки перед сохранением брони.
+ */
 @Service
 public class BookingService {
 
@@ -27,19 +31,32 @@ public class BookingService {
         this.passengerRepository = passengerRepository;
     }
 
+    /**
+     * Возвращает все бронирования.
+     */
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
 
+    /**
+     * Возвращает бронирование по id.
+     */
     public Booking getBookingById(Long id) {
         return bookingRepository.findById(id);
     }
 
+    /**
+     * Возвращает все бронирования конкретного рейса.
+     */
     public List<Booking> getBookingsByFlightId(Long flightId) {
         flightRepository.findById(flightId);
         return bookingRepository.findByFlightId(flightId);
     }
 
+    /**
+     * Сохраняет бронирование только после проверки бизнес-правил:
+     * рейс существует, пассажир существует, место не занято и вместимость не превышена.
+     */
     public Booking saveBooking(Booking booking) {
         validateBooking(booking);
         final Flight flight = flightRepository.findById(booking.getFlightId());
@@ -47,10 +64,16 @@ public class BookingService {
         return bookingRepository.save(booking, flight.getCapacity());
     }
 
+    /**
+     * Удаляет бронирование по id.
+     */
     public void deleteBooking(Long id) {
         bookingRepository.delete(id);
     }
 
+    /**
+     * Базовая валидация входных данных бронирования.
+     */
     private void validateBooking(Booking booking) {
         if (booking == null) {
             throw new AirlineException("Данные бронирования обязательны");

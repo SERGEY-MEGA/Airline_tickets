@@ -4,6 +4,9 @@ import digital.zil.hl.module1.model.Passenger;
 
 import java.util.List;
 
+/**
+ * Общий контракт репозитория пассажиров.
+ */
 public interface PassengerRepository {
 
     List<Passenger> findAll();

@@ -12,8 +12,12 @@ import java.util.List;
 
 import static java.lang.String.format;
 
+/**
+ * Репозиторий LAB2 для бронирований.
+ * Использует БД, но сохраняет те же бизнес-правила, что и LAB1.
+ */
 @Repository
-@Profile("lab2")
+@Profile({"lab2", "lab3"})
 @Transactional(readOnly = true)
 public class JpaBookingRepository implements BookingRepository {
 
@@ -61,6 +65,10 @@ public class JpaBookingRepository implements BookingRepository {
 
     @Override
     @Transactional
+    /**
+     * Сначала блокирует рейс, потом проверяет вместимость и занятость места.
+     * Это уменьшает риск гонок при одновременных запросах.
+     */
     public Booking save(Booking booking, int flightCapacity) {
         flightRepository.findByIdForUpdate(booking.getFlightId())
                 .orElseThrow(() -> new AirlineException(format(FLIGHT_NOT_FOUND_MSG, booking.getFlightId())));

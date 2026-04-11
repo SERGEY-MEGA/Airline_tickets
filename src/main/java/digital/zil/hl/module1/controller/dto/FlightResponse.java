@@ -2,6 +2,9 @@ package digital.zil.hl.module1.controller.dto;
 
 import java.time.LocalDate;
 
+/**
+ * DTO ответа по рейсу.
+ */
 public class FlightResponse {
 
     private Long id;

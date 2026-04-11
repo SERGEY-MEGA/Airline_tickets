@@ -15,6 +15,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.String.format;
 
+/**
+ * Репозиторий LAB1 для бронирований.
+ * Здесь же защищаемся от двойного бронирования места и переполнения рейса.
+ */
 @Repository
 @Profile("lab1")
 public class InMemoryBookingRepository implements BookingRepository {
@@ -73,6 +77,9 @@ public class InMemoryBookingRepository implements BookingRepository {
     }
 
     @Override
+    /**
+     * synchronized нужен, чтобы два одновременных запроса не заняли одно и то же место.
+     */
     public synchronized Booking save(@NonNull Booking booking, int flightCapacity) {
         if (countByFlightId(booking.getFlightId()) >= flightCapacity) {
             throw new AirlineException(format(FLIGHT_FULLY_BOOKED_MSG, booking.getFlightId(), flightCapacity));
