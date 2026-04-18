@@ -1,7 +1,6 @@
 package digital.zil.hl.module1.repository.memory;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Flight;
@@ -31,10 +30,10 @@ public class InMemoryFlightRepository implements FlightRepository {
     private static final Map<Long, Flight> FLIGHTS = new HashMap<>();
     private static final AtomicLong ID_COUNTER = new AtomicLong(1);
 
-    @Override
     /**
      * Возвращает копию списка, чтобы внешние слои не работали с внутренней коллекцией напрямую.
      */
+    @Override
     public List<Flight> findAll() {
         return new ArrayList<>(FLIGHTS.values());
     }
@@ -49,17 +48,17 @@ public class InMemoryFlightRepository implements FlightRepository {
     }
 
     @Override
-    public Flight findByFlightNumber(@NonNull String flightNumber) {
+    public Flight findByFlightNumber(String flightNumber) {
         return FLIGHTS.values().stream()
                 .filter(flight -> flight.getFlightNumber().equalsIgnoreCase(flightNumber))
                 .findFirst()
                 .orElseThrow(() -> new AirlineException(format(FLIGHT_NOT_FOUND_NUMBER_MSG, flightNumber)));
     }
 
-    @Override
     /**
      * В LAB1 фильтрация выполняется вручную по данным из HashMap.
      */
+    @Override
     public List<Flight> findByFilters(String destination, LocalDate departureDate) {
         List<Flight> result = new ArrayList<>();
         for (Flight flight : FLIGHTS.values()) {
@@ -74,11 +73,11 @@ public class InMemoryFlightRepository implements FlightRepository {
         return result;
     }
 
-    @Override
     /**
      * Сохраняет новый рейс и вручную назначает id, как это делала бы база данных.
      */
-    public Flight save(@NonNull Flight flight) {
+    @Override
+    public Flight save(Flight flight) {
         for (Flight savedFlight : FLIGHTS.values()) {
             if (savedFlight.getFlightNumber().equalsIgnoreCase(flight.getFlightNumber())) {
                 throw new AirlineException(format(FLIGHT_ALREADY_EXISTS_MSG, flight.getFlightNumber()));
@@ -90,11 +89,11 @@ public class InMemoryFlightRepository implements FlightRepository {
         return flight;
     }
 
-    @Override
     /**
      * Полностью заменяет данные рейса по его id.
      */
-    public Flight update(Long id, @NonNull Flight flight) {
+    @Override
+    public Flight update(Long id, Flight flight) {
         if (!FLIGHTS.containsKey(id)) {
             throw new AirlineException(format(FLIGHT_NOT_FOUND_MSG, id));
         }

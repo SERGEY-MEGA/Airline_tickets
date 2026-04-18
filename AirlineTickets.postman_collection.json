@@ -39,6 +39,24 @@
           }
         },
         {
+          "name": "Get All Flights Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Показывает занятые и свободные места по всем рейсам.",
+            "url": {
+              "raw": "{{baseUrl}}/flights/availability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "flights",
+                "availability"
+              ]
+            }
+          }
+        },
+        {
           "name": "Create Flight",
           "request": {
             "method": "POST",
@@ -131,6 +149,29 @@
           }
         },
         {
+          "name": "Get Bookings By Flight",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Удобно показать, какие места уже заняты на конкретном рейсе.",
+            "url": {
+              "raw": "{{baseUrl}}/bookings?flightId=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings"
+              ],
+              "query": [
+                {
+                  "key": "flightId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Create Booking",
           "request": {
             "method": "POST",
@@ -143,6 +184,32 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"flightId\": 1,\n  \"passengerId\": 1,\n  \"serviceClass\": \"ECONOMY\",\n  \"seat\": \"5A\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Duplicate Booking Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Демонстрация бизнес-правила: одно место на одном рейсе нельзя забронировать дважды.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flightId\": 1,\n  \"passengerId\": 1,\n  \"serviceClass\": \"ECONOMY\",\n  \"seat\": \"1A\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/bookings",

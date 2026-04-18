@@ -1,7 +1,6 @@
 package digital.zil.hl.module1.repository.memory;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Booking;
@@ -76,11 +75,11 @@ public class InMemoryBookingRepository implements BookingRepository {
         return false;
     }
 
-    @Override
     /**
      * synchronized нужен, чтобы два одновременных запроса не заняли одно и то же место.
      */
-    public synchronized Booking save(@NonNull Booking booking, int flightCapacity) {
+    @Override
+    public synchronized Booking save(Booking booking, int flightCapacity) {
         if (countByFlightId(booking.getFlightId()) >= flightCapacity) {
             throw new AirlineException(format(FLIGHT_FULLY_BOOKED_MSG, booking.getFlightId(), flightCapacity));
         }

@@ -7,7 +7,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import org.springframework.lang.NonNull;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,15 +25,12 @@ public class Flight {
     private Long id;
 
     @Column(name = "flight_number", nullable = false, unique = true)
-    @NonNull
     private String flightNumber;
 
     @Column(nullable = false)
-    @NonNull
     private String destination;
 
     @Column(name = "departure_date", nullable = false)
-    @NonNull
     private LocalDate departureDate;
 
     @Column(nullable = false)

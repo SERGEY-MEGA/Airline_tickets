@@ -1,7 +1,6 @@
 package digital.zil.hl.module1.repository.memory;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Passenger;
@@ -17,6 +16,7 @@ import static java.lang.String.format;
 
 /**
  * Репозиторий LAB1 для пассажиров.
+ * Данные — в {@code HashMap}; ид считаются через {@code AtomicLong}.
  */
 @Repository
 @Profile("lab1")
@@ -42,14 +42,14 @@ public class InMemoryPassengerRepository implements PassengerRepository {
     }
 
     @Override
-    public Passenger save(@NonNull Passenger passenger) {
+    public Passenger save(Passenger passenger) {
         passenger.setId(ID_COUNTER.getAndIncrement());
         PASSENGERS.put(passenger.getId(), passenger);
         return passenger;
     }
 
     @Override
-    public Passenger update(Long id, @NonNull Passenger passenger) {
+    public Passenger update(Long id, Passenger passenger) {
         if (!PASSENGERS.containsKey(id)) {
             throw new AirlineException(format(PASSENGER_NOT_FOUND_MSG, id));
         }

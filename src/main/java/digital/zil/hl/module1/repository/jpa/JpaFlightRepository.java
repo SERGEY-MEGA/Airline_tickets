@@ -48,13 +48,13 @@ public class JpaFlightRepository implements FlightRepository {
                 .orElseThrow(() -> new AirlineException(format(FLIGHT_NOT_FOUND_NUMBER_MSG, flightNumber)));
     }
 
-    @Override
     /**
      * В LAB2 выборка делается через JPA:
      * по направлению,
      * по дате,
      * или сразу по двум фильтрам.
      */
+    @Override
     public List<Flight> findByFilters(String destination, LocalDate departureDate) {
         boolean hasDestination = destination != null && !destination.isBlank();
         boolean hasDate = departureDate != null;

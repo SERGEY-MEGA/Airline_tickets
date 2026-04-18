@@ -97,6 +97,9 @@ http://localhost:8080
 
 ### Запуск PostgreSQL
 
+Если Docker сейчас не установлен, этот шаг нужно выполнить после повторной установки Docker Desktop.
+Конфигурация уже подготовлена: отдельный контейнер PostgreSQL описан в `docker-compose.yml`.
+
 ```bash
 docker compose up -d postgres
 ```
@@ -112,6 +115,10 @@ docker compose ps
 ```bash
 docker compose down
 ```
+
+Если Docker не хочется использовать для LAB2, можно поднять локальный PostgreSQL вручную и создать БД
+`airline_tickets`. Тогда оставьте стандартные параметры подключения или задайте `DB_URL`,
+`DB_USERNAME`, `DB_PASSWORD`.
 
 ### Запуск LAB2
 
@@ -142,6 +149,8 @@ docker compose down
 
 ### Запуск LAB3
 
+Перед запуском проверьте, что Docker Desktop установлен и запущен.
+
 Обычный запуск на порту `8080`:
 
 ```bash
@@ -171,6 +180,15 @@ docker compose exec -T postgres psql -U postgres -d airline_tickets -c "select i
 ```bash
 docker compose down
 ```
+
+Если нужно начать демонстрацию с чистой БД, можно удалить volume PostgreSQL:
+
+```bash
+docker compose down -v
+docker compose up -d --build
+```
+
+Для обычной сдачи чаще достаточно `docker compose down`, чтобы не удалять данные между перезапусками.
 
 ## API
 
@@ -351,6 +369,48 @@ curl "http://localhost:8080/bookings?flightId=1"
 ```bash
 ./gradlew test --no-daemon
 ```
+
+Коллекция Postman лежит в файле `AirlineTickets.postman_collection.json`.
+Для быстрой проверки из IntelliJ IDEA можно открыть `requests.http`.
+
+## Что открыть в IntelliJ IDEA
+
+Для LAB2:
+
+- `src/main/resources/application-lab2.properties`
+- `src/main/resources/data.sql`
+- `src/main/java/digital/zil/hl/module1/model`
+- `src/main/java/digital/zil/hl/module1/repository/jpa`
+- `src/main/java/digital/zil/hl/module1/service`
+- `src/main/java/digital/zil/hl/module1/controller`
+
+Для LAB3:
+
+- `Dockerfile`
+- `docker-compose.yml`
+- `src/main/resources/application-lab3.properties`
+- `src/main/resources/db/migration/V1__create_airline_schema.sql`
+- `src/main/resources/db/migration/V2__insert_test_data.sql`
+
+## Короткий сценарий защиты
+
+LAB2:
+
+1. Запустить PostgreSQL: `docker compose up -d postgres`.
+2. Запустить приложение: `./gradlew bootRun --args='--spring.profiles.active=lab2'`.
+3. В Postman выполнить `GET /flights`, `GET /passengers`, `GET /bookings`.
+4. Выполнить `GET /flights/free-seats?destination=Moscow&date=2026-06-10`.
+5. Выполнить `POST /bookings` с новым местом, например `5A`.
+6. Повторить бронь на уже занятое место `1A`, чтобы показать бизнес-ошибку.
+
+LAB3:
+
+1. Запустить стенд: `docker compose up -d --build`.
+2. Проверить контейнеры: `docker compose ps`.
+3. Показать `Dockerfile` и `docker-compose.yml`.
+4. Показать миграции `V1__create_airline_schema.sql` и `V2__insert_test_data.sql`.
+5. Выполнить в Postman те же запросы, что и для LAB2.
+6. Показать таблицу `flyway_schema_history` командой из раздела LAB3.
 
 ## Полезные замечания
 

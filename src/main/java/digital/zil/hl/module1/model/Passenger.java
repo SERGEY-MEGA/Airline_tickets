@@ -7,13 +7,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import org.springframework.lang.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Сущность пассажира.
+ * LAB1 — хранится в HashMap; LAB2/LAB3 — таблица {@code passengers}.
  */
 @Entity
 @Table(name = "passengers")
@@ -24,11 +24,9 @@ public class Passenger {
     private Long id;
 
     @Column(name = "full_name", nullable = false)
-    @NonNull
     private String fullName;
 
     @Column(name = "passport_data", nullable = false)
-    @NonNull
     private String passportData;
 
     @Column

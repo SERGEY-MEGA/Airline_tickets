@@ -35,10 +35,11 @@ public class Lab1DataInitializer implements CommandLineRunner {
         this.bookingService = bookingService;
     }
 
-    @Override
     /**
      * Создаёт стартовые рейсы, пассажиров и бронирования один раз при запуске.
+     * Набор совпадает с {@code data.sql} / Flyway V2, чтобы Postman и curl из README работали и в LAB1.
      */
+    @Override
     public void run(String... args) {
         // Если данные уже есть, повторно ничего не создаём.
         if (!flightService.getAllFlights().isEmpty()) {
@@ -46,20 +47,20 @@ public class Lab1DataInitializer implements CommandLineRunner {
         }
 
         Flight moscowFlight = flightService.saveFlight(
-                new Flight(null, "SU100", "Moscow", LocalDate.of(2026, 5, 10), 5)
+                new Flight(null, "SU500", "Moscow", LocalDate.of(2026, 6, 10), 6)
         );
-        Flight kazanFlight = flightService.saveFlight(
-                new Flight(null, "DP200", "Kazan", LocalDate.of(2026, 5, 10), 3)
+        Flight spbFlight = flightService.saveFlight(
+                new Flight(null, "DP610", "Saint Petersburg", LocalDate.of(2026, 6, 10), 4)
         );
         Flight sochiFlight = flightService.saveFlight(
-                new Flight(null, "S7200", "Sochi", LocalDate.of(2026, 5, 11), 4)
+                new Flight(null, "S7200", "Sochi", LocalDate.of(2026, 6, 11), 5)
         );
 
         Passenger ivanov = passengerService.savePassenger(
                 new Passenger(null, "Иван Иванов", "1234 567890", "ivanov@example.com")
         );
         Passenger petrova = passengerService.savePassenger(
-                new Passenger(null, "Анна Петрова", "4321 098765", "+7-999-111-22-33")
+                new Passenger(null, "Анна Петрова", "4321 987654", "+7-999-123-45-67")
         );
         Passenger sidorov = passengerService.savePassenger(
                 new Passenger(null, "Пётр Сидоров", "7777 111222", "sidorov@example.com")
@@ -69,7 +70,7 @@ public class Lab1DataInitializer implements CommandLineRunner {
                 new Booking(null, moscowFlight.getId(), ivanov.getId(), ServiceClass.ECONOMY, "1A")
         );
         bookingService.saveBooking(
-                new Booking(null, kazanFlight.getId(), petrova.getId(), ServiceClass.BUSINESS, "2B")
+                new Booking(null, spbFlight.getId(), petrova.getId(), ServiceClass.BUSINESS, "2B")
         );
         bookingService.saveBooking(
                 new Booking(null, sochiFlight.getId(), sidorov.getId(), ServiceClass.ECONOMY, "3C")

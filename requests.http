@@ -1,3 +1,18 @@
+### Получить все рейсы
+GET http://localhost:8080/flights
+
+### Получить все пассажиры
+GET http://localhost:8080/passengers
+
+### Получить все бронирования
+GET http://localhost:8080/bookings
+
+### Получить бронирования конкретного рейса
+GET http://localhost:8080/bookings?flightId=1
+
+### Получить доступность мест по всем рейсам
+GET http://localhost:8080/flights/availability
+
 ### Создать рейс
 POST http://localhost:8080/flights
 Content-Type: application/json
@@ -38,3 +53,14 @@ GET http://localhost:8080/flights/free-seats?date=2026-06-10
 
 ### Получить свободные места по направлению и дате
 GET http://localhost:8080/flights/free-seats?destination=Moscow&date=2026-06-10
+
+### Проверить ошибку: повторная бронь уже занятого места 1A на рейсе 1
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": 1,
+  "passengerId": 1,
+  "serviceClass": "ECONOMY",
+  "seat": "1A"
+}

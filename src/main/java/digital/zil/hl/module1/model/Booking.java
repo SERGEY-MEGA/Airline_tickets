@@ -12,7 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import org.springframework.lang.NonNull;
 
 /**
  * Сущность бронирования.
@@ -30,16 +29,13 @@ public class Booking {
     private Long id;
 
     @Column(name = "flight_id", nullable = false)
-    @NonNull
     private Long flightId;
 
     @Column(name = "passenger_id", nullable = false)
-    @NonNull
     private Long passengerId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "service_class", nullable = false)
-    @NonNull
     private ServiceClass serviceClass;
 
     @Column(nullable = false)
