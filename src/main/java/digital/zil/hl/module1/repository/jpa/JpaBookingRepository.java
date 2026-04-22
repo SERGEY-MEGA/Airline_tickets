@@ -13,11 +13,11 @@ import java.util.List;
 import static java.lang.String.format;
 
 /**
- * Репозиторий LAB2/LAB3 для бронирований.
- * Использует БД, но сохраняет те же бизнес-правила, что и LAB1.
+ * PostgreSQL-репозиторий для бронирований.
+ * Использует Spring Data JPA и сохраняет бизнес-правила сервиса.
  */
 @Repository
-@Profile({"lab2", "lab3"})
+@Profile("postgres")
 @Transactional(readOnly = true)
 public class JpaBookingRepository implements BookingRepository {
 

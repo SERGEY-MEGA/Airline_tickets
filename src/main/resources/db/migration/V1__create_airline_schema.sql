@@ -1,4 +1,4 @@
--- LAB3: DDL migration.
+-- DDL migration.
 -- Этот файл создаёт схему PostgreSQL для приложения "Авиакасса".
 -- DDL означает Data Definition Language: создание таблиц и ограничений.
 

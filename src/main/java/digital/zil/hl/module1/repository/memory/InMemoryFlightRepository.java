@@ -16,11 +16,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import static java.lang.String.format;
 
 /**
- * Репозиторий LAB1 для рейсов.
+ * In-memory репозиторий для рейсов.
  * Хранит данные в static HashMap и работает без базы данных.
  */
 @Repository
-@Profile("lab1")
+@Profile("memory")
 public class InMemoryFlightRepository implements FlightRepository {
 
     private static final String FLIGHT_NOT_FOUND_MSG = "Рейс с ID %d не найден";
@@ -56,7 +56,7 @@ public class InMemoryFlightRepository implements FlightRepository {
     }
 
     /**
-     * В LAB1 фильтрация выполняется вручную по данным из HashMap.
+     * В memory-режиме фильтрация выполняется вручную по данным из HashMap.
      */
     @Override
     public List<Flight> findByFilters(String destination, LocalDate departureDate) {

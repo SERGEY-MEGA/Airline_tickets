@@ -1,4 +1,4 @@
-# LAB3: Dockerfile для контейнеризации Spring Boot приложения.
+# Dockerfile для контейнеризации Spring Boot приложения.
 # Используется multi-stage build:
 # 1) первый stage собирает jar;
 # 2) второй stage запускает уже готовое приложение.

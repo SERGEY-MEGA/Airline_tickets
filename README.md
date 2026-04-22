@@ -1,113 +1,47 @@
 # Авиакасса
 
-Учебный проект по дисциплине **«Высоконагруженные вычислительные системы»**.
+Учебный Spring Boot проект: REST-сервис для бронирования авиабилетов.
 
-Проект реализует простую систему бронирования авиабилетов с двумя режимами работы:
+## Что реализовано
 
-- `LAB1` — хранение данных в памяти через `static HashMap`
-- `LAB2` — хранение данных в PostgreSQL через Spring Data JPA
-- `LAB3` — контейнеризация приложения и БД через Docker Compose, схема и данные через Flyway migrations
+- рейсы: номер, направление, дата вылета, вместимость;
+- пассажиры: ФИО, паспортные данные, контакты;
+- бронирования: рейс, пассажир, класс обслуживания, место;
+- расчёт свободных мест по направлению и дате;
+- PostgreSQL через Spring Data JPA;
+- миграции схемы и стартовых данных через Flyway;
+- Docker Compose стенд;
+- k6-сценарии для нагрузочного тестирования;
+- Python-скрипт для заполнения данных перед нагрузкой.
 
-На момент адаптации в удалённом репозитории была доступна ветка `main`, поэтому именно она использована как фактическая основа вместо указанной в задании `feature/spring-boot-test`.
+## Режимы запуска
 
-## Что делает проект
+В проекте больше нет профилей с номерами лабораторных.
+Профили называются по смыслу:
 
-Система поддерживает три основные сущности:
+- `postgres` - основной режим: PostgreSQL + Flyway;
+- `memory` - вспомогательный режим без БД, для быстрой локальной проверки.
 
-- `Flight` — рейс
-- `Passenger` — пассажир
-- `Booking` — бронирование
+По умолчанию активен `postgres`.
 
-Класс обслуживания хранится в `ServiceClass`:
-
-- `ECONOMY`
-- `BUSINESS`
-- `FIRST`
-
-Реализованы бизнес-правила:
-
-- нельзя забронировать место на несуществующий рейс
-- нельзя забронировать место несуществующему пассажиру
-- нельзя занять уже занятое место на рейсе
-- нельзя превысить вместимость рейса
-- можно получить остаток свободных мест по направлению и дате
-- можно получить список бронирований по конкретному рейсу
-
-## Структура проекта
-
-```text
-src/main/java/digital/zil/hl/module1
-├── config
-├── controller
-│   ├── dto
-│   └── exception
-├── model
-├── repository
-│   ├── memory
-│   └── jpa
-└── service
-```
-
-### Слои
-
-- `controller` — REST API
-- `service` — бизнес-логика и базовая валидация
-- `repository` — работа с хранилищем
-- `model` — доменные сущности
-
-## LAB1
-
-### Как работает
-
-- активный профиль по умолчанию: `lab1`
-- репозитории работают на `static HashMap`
-- стартовые тестовые данные загружаются через `Lab1DataInitializer`
-
-### Запуск LAB1
+## Быстрый запуск через Docker
 
 ```bash
-./gradlew bootRun
+docker compose up -d --build
 ```
 
-Приложение стартует на:
-
-```text
-http://localhost:8080
-```
-
-### Что уже есть после запуска LAB1
-
-Будут созданы тестовые данные:
-
-- рейсы
-- пассажиры
-- бронирования
-
-Поэтому сразу после запуска можно открывать `GET /flights`, `GET /passengers`, `GET /bookings`.
-
-## LAB2
-
-### Как работает
-
-- используется профиль `lab2`
-- репозитории переключаются на Spring Data JPA
-- данные хранятся в PostgreSQL
-- схема создаётся Hibernate
-- тестовые данные подгружаются из `src/main/resources/data.sql`
-
-### Запуск PostgreSQL
-
-Если Docker сейчас не установлен, этот шаг нужно выполнить после повторной установки Docker Desktop.
-Конфигурация уже подготовлена: отдельный контейнер PostgreSQL описан в `docker-compose.yml`.
-
-```bash
-docker compose up -d postgres
-```
-
-Проверка контейнера:
+Проверка:
 
 ```bash
 docker compose ps
+curl http://localhost:8080/flights
+curl "http://localhost:8080/flights/free-seats?destination=Moscow&date=2026-06-10"
+```
+
+Проверка Flyway:
+
+```bash
+docker compose exec -T postgres psql -U postgres -d airline_tickets -c "select installed_rank, version, description, success from flyway_schema_history order by installed_rank;"
 ```
 
 Остановка:
@@ -116,99 +50,65 @@ docker compose ps
 docker compose down
 ```
 
-Если Docker не хочется использовать для LAB2, можно поднять локальный PostgreSQL вручную и создать БД
-`airline_tickets`. Тогда оставьте стандартные параметры подключения или задайте `DB_URL`,
-`DB_USERNAME`, `DB_PASSWORD`.
-
-### Запуск LAB2
-
-```bash
-./gradlew bootRun --args='--spring.profiles.active=lab2'
-```
-
-### Параметры подключения к БД
-
-По умолчанию используются значения:
-
-- `DB_URL=jdbc:postgresql://localhost:5432/airline_tickets`
-- `DB_USERNAME=postgres`
-- `DB_PASSWORD=postgres`
-
-При необходимости их можно переопределить через переменные окружения.
-
-## LAB3
-
-### Как работает
-
-- приложение запускается в Docker-контейнере
-- PostgreSQL запускается в Docker-контейнере
-- профиль приложения: `lab3`
-- схема БД создаётся из `src/main/resources/db/migration/V1__create_airline_schema.sql`
-- тестовые данные добавляются из `src/main/resources/db/migration/V2__insert_test_data.sql`
-- миграции запускает Flyway
-
-### Запуск LAB3
-
-Перед запуском проверьте, что Docker Desktop установлен и запущен.
-
-Обычный запуск на порту `8080`:
-
-```bash
-docker compose up -d --build
-```
-
-Если порт `8080` занят, можно запустить на другом внешнем порту, например `8083`:
-
-```bash
-APP_PORT=8083 docker compose up -d --build
-```
-
-Проверка контейнеров:
-
-```bash
-docker compose ps
-```
-
-Проверка Flyway-миграций:
-
-```bash
-docker compose exec -T postgres psql -U postgres -d airline_tickets -c "select installed_rank, version, description, success from flyway_schema_history order by installed_rank;"
-```
-
-Остановка стенда:
-
-```bash
-docker compose down
-```
-
-Если нужно начать демонстрацию с чистой БД, можно удалить volume PostgreSQL:
+Чистый перезапуск с удалением данных:
 
 ```bash
 docker compose down -v
 docker compose up -d --build
 ```
 
-Для обычной сдачи чаще достаточно `docker compose down`, чтобы не удалять данные между перезапусками.
+## Локальный запуск с PostgreSQL
+
+Сначала поднять PostgreSQL:
+
+```bash
+docker compose up -d postgres
+```
+
+Потом запустить приложение:
+
+```bash
+./gradlew bootRun
+```
+
+Или явно:
+
+```bash
+./gradlew bootRun --args='--spring.profiles.active=postgres'
+```
+
+Параметры БД можно переопределить:
+
+- `DB_URL`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+
+## Запуск без БД
+
+```bash
+./gradlew bootRun --args='--spring.profiles.active=memory'
+```
+
+Этот режим использует `HashMap`-репозитории и стартовые данные из `MemoryDataInitializer`.
+Он нужен только для быстрой проверки бизнес-логики без инфраструктуры.
 
 ## API
 
-### Рейсы
+Рейсы:
 
 ```text
 GET    /flights
 GET    /flights/{id}
-GET    /flights/{flightId}/availability
 GET    /flights/availability
+GET    /flights/{flightId}/availability
 GET    /flights/free-seats?destination={destination}&date={yyyy-MM-dd}
-GET    /flights/free-seats?destination={destination}
-GET    /flights/free-seats?date={yyyy-MM-dd}
 GET    /flights/number/{flightNumber}/availability
 POST   /flights
 PUT    /flights/{id}
 DELETE /flights/{id}
 ```
 
-### Пассажиры
+Пассажиры:
 
 ```text
 GET    /passengers
@@ -218,7 +118,7 @@ PUT    /passengers/{id}
 DELETE /passengers/{id}
 ```
 
-### Бронирования
+Бронирования:
 
 ```text
 GET    /bookings
@@ -228,15 +128,17 @@ POST   /bookings
 DELETE /bookings/{id}
 ```
 
-## Примеры HTTP-запросов
+Служебное:
 
-### Получить все рейсы
-
-```bash
-curl http://localhost:8080/flights
+```text
+DELETE /clear
 ```
 
-### Создать рейс
+`/clear` нужен для подготовки данных перед нагрузочными тестами.
+
+## Примеры запросов
+
+Создать рейс:
 
 ```bash
 curl -X POST http://localhost:8080/flights \
@@ -249,7 +151,7 @@ curl -X POST http://localhost:8080/flights \
   }'
 ```
 
-### Создать пассажира
+Создать пассажира:
 
 ```bash
 curl -X POST http://localhost:8080/passengers \
@@ -261,7 +163,7 @@ curl -X POST http://localhost:8080/passengers \
   }'
 ```
 
-### Создать бронирование
+Создать бронирование:
 
 ```bash
 curl -X POST http://localhost:8080/bookings \
@@ -274,148 +176,86 @@ curl -X POST http://localhost:8080/bookings \
   }'
 ```
 
-### Получить остаток свободных мест по направлению и дате
+Проверить свободные места:
 
 ```bash
 curl "http://localhost:8080/flights/free-seats?destination=Moscow&date=2026-06-10"
 ```
 
-### Получить остаток свободных мест только по направлению
+Проверить бизнес-ошибку:
 
 ```bash
-curl "http://localhost:8080/flights/free-seats?destination=Moscow"
+curl -X POST http://localhost:8080/bookings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "flightId": 1,
+    "passengerId": 1,
+    "serviceClass": "ECONOMY",
+    "seat": "1A"
+  }'
 ```
 
-### Получить остаток свободных мест только по дате
+Ожидаемо вернётся ошибка, потому что место `1A` уже занято стартовыми данными.
 
-```bash
-curl "http://localhost:8080/flights/free-seats?date=2026-06-10"
-```
+## Где что находится
 
-### Получить бронирования по рейсу
+- `controller` - REST endpoints;
+- `controller/dto` - JSON-запросы и ответы;
+- `service` - бизнес-логика;
+- `repository` - общий контракт хранения;
+- `repository/jpa` - PostgreSQL-реализация;
+- `repository/memory` - in-memory реализация;
+- `model` - JPA-сущности;
+- `config` - вспомогательная конфигурация memory-режима;
+- `src/main/resources/db/migration` - Flyway migrations;
+- `Dockerfile` - сборка контейнера приложения;
+- `docker-compose.yml` - приложение + PostgreSQL;
+- `k6` - нагрузочные сценарии;
+- `scripts` - Python-утилиты.
 
-```bash
-curl "http://localhost:8080/bookings?flightId=1"
-```
+## Что показывать преподавателю
 
-## Что показать преподавателю
+1. `application.properties` и `application-postgres.properties`: основной профиль `postgres`.
+2. `model`: сущности и связи.
+3. `repository/jpa`: Spring Data JPA.
+4. `service`: проверки бизнес-правил.
+5. `controller`: REST API.
+6. `db/migration`: Flyway DDL и DML.
+7. `Dockerfile` и `docker-compose.yml`: контейнерный стенд.
+8. Postman или curl: `GET /flights`, `GET /flights/free-seats`, `POST /bookings`.
+9. k6: `k6/load-profile.js`, `k6/lab4-load-test.js`, график из `scripts/plot_k6_results.py`.
 
-### Для LAB1
-
-Показать:
-
-- что используется профиль `lab1`
-- что репозитории лежат в `repository/memory`
-- что данные хранятся в `static HashMap`
-- что API работает без БД
-- что есть стартовые тестовые данные
-- что ограничение по местам и проверка занятых мест вынесены в слой сервисов и репозиториев
-
-Удобная демонстрация:
-
-1. `GET /flights`
-2. `GET /passengers`
-3. `GET /bookings`
-4. `GET /flights/free-seats?...`
-5. `POST /bookings`
-6. повторный `POST /bookings` на то же место, чтобы показать ошибку
-
-### Для LAB2
-
-Показать:
-
-- `docker-compose.yml`
-- профиль `lab2`
-- JPA-аннотации в моделях
-- репозитории в `repository/jpa`
-- `data.sql`
-- запуск через PostgreSQL
-- тот же API без изменения бизнес-смысла
-
-Удобная демонстрация:
-
-1. `docker compose up -d postgres`
-2. `./gradlew bootRun --args='--spring.profiles.active=lab2'`
-3. `GET /flights`
-4. `GET /bookings`
-5. `GET /flights/free-seats?...`
-6. `POST /bookings`
-
-### Для LAB3
-
-Показать:
-
-- `Dockerfile`
-- `docker-compose.yml`
-- профиль `lab3`
-- папку `src/main/resources/db/migration`
-- таблицу `flyway_schema_history`
-- что приложение и PostgreSQL работают как два контейнера
-
-Удобная демонстрация:
-
-1. `docker compose up -d --build`
-2. `docker compose ps`
-3. открыть `Dockerfile`
-4. открыть `src/main/resources/db/migration`
-5. выполнить `GET /flights`
-6. выполнить `GET /flights/free-seats?destination=Moscow&date=2026-06-10`
-7. показать `flyway_schema_history`
-
-## Проверка проекта
-
-Запуск тестов:
+## Проверки
 
 ```bash
 ./gradlew test --no-daemon
+node --check k6/load-profile.js
+node --check k6/lab4-load-test.js
+python3 -m py_compile scripts/seed_data.py scripts/plot_k6_results.py
 ```
 
-Коллекция Postman лежит в файле `AirlineTickets.postman_collection.json`.
-Для быстрой проверки из IntelliJ IDEA можно открыть `requests.http`.
+## Нагрузочное тестирование
 
-## Что открыть в IntelliJ IDEA
+Установить зависимости Python:
 
-Для LAB2:
+```bash
+pip install -r requirements-lab5.txt
+```
 
-- `src/main/resources/application-lab2.properties`
-- `src/main/resources/data.sql`
-- `src/main/java/digital/zil/hl/module1/model`
-- `src/main/java/digital/zil/hl/module1/repository/jpa`
-- `src/main/java/digital/zil/hl/module1/service`
-- `src/main/java/digital/zil/hl/module1/controller`
+Сценарий k6:
 
-Для LAB3:
+```bash
+k6 run --out json=reports/k6-lab4-result.json k6/lab4-load-test.js
+```
 
-- `Dockerfile`
-- `docker-compose.yml`
-- `src/main/resources/application-lab3.properties`
-- `src/main/resources/db/migration/V1__create_airline_schema.sql`
-- `src/main/resources/db/migration/V2__insert_test_data.sql`
+График:
 
-## Короткий сценарий защиты
+```bash
+python3 scripts/plot_k6_results.py --input reports/k6-lab4-result.json --output reports/k6-lab4-response-time.png
+```
 
-LAB2:
+Заполнение данных перед нагрузкой:
 
-1. Запустить PostgreSQL: `docker compose up -d postgres`.
-2. Запустить приложение: `./gradlew bootRun --args='--spring.profiles.active=lab2'`.
-3. В Postman выполнить `GET /flights`, `GET /passengers`, `GET /bookings`.
-4. Выполнить `GET /flights/free-seats?destination=Moscow&date=2026-06-10`.
-5. Выполнить `POST /bookings` с новым местом, например `5A`.
-6. Повторить бронь на уже занятое место `1A`, чтобы показать бизнес-ошибку.
-
-LAB3:
-
-1. Запустить стенд: `docker compose up -d --build`.
-2. Проверить контейнеры: `docker compose ps`.
-3. Показать `Dockerfile` и `docker-compose.yml`.
-4. Показать миграции `V1__create_airline_schema.sql` и `V2__insert_test_data.sql`.
-5. Выполнить в Postman те же запросы, что и для LAB2.
-6. Показать таблицу `flyway_schema_history` командой из раздела LAB3.
-
-## Полезные замечания
-
-- в `LAB1` БД не используется
-- в `LAB2` бизнес-логика сохранена, меняется только способ хранения
-- в `LAB3` бизнес-логика тоже не меняется, добавляется контейнеризация и миграции БД
-- проект специально сделан без security, frontend и лишних библиотек
-- валидация базовая и учебно-понятная, без перегрузки архитектуры
+```bash
+python3 scripts/seed_data.py --count 500 --endpoint bookings
+```

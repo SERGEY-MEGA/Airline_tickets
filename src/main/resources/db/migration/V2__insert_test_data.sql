@@ -1,4 +1,4 @@
--- LAB3: DML migration.
+-- DML migration.
 -- Этот файл добавляет тестовые данные для Postman и демонстрации преподавателю.
 -- DML означает Data Manipulation Language: вставка и изменение данных.
 

@@ -42,8 +42,8 @@ public class Booking {
     private String seat;
 
     /**
-     * Связь с рейсом для LAB2.
-     * Поля flightId/passengerId остаются простыми и понятными для LAB1.
+     * JPA-связи нужны PostgreSQL-режиму.
+     * Поля flightId/passengerId остаются простыми для DTO и memory-режима.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "flight_id", insertable = false, updatable = false)

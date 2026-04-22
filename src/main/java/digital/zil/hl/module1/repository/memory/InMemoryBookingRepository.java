@@ -15,11 +15,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import static java.lang.String.format;
 
 /**
- * Репозиторий LAB1 для бронирований.
+ * In-memory репозиторий для бронирований.
  * Здесь же защищаемся от двойного бронирования места и переполнения рейса.
  */
 @Repository
-@Profile("lab1")
+@Profile("memory")
 public class InMemoryBookingRepository implements BookingRepository {
 
     private static final String BOOKING_NOT_FOUND_MSG = "Бронирование с ID %d не найдено";

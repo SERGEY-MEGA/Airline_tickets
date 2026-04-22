@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * Сущность рейса.
- * В LAB1 живёт в HashMap, в LAB2 хранится в таблице flights.
+ * В memory-режиме живёт в HashMap, в PostgreSQL хранится в таблице flights.
  */
 @Entity
 @Table(name = "flights")

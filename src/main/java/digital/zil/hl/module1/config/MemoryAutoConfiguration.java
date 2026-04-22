@@ -9,17 +9,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 /**
- * В профиле lab1 база данных не нужна.
- * Отключает JDBC и JPA автоконфигурацию (дополняет {@code application.properties}),
- * чтобы приложение работало только с in-memory репозиториями на HashMap.
+ * Режим memory работает без базы данных.
+ * Отключает JDBC и JPA, чтобы приложение использовало in-memory репозитории.
  */
 @Configuration
-@Profile("lab1")
+@Profile("memory")
 @EnableAutoConfiguration(exclude = {
         DataSourceAutoConfiguration.class,
         DataSourceTransactionManagerAutoConfiguration.class,
         DataJpaRepositoriesAutoConfiguration.class,
         HibernateJpaAutoConfiguration.class
 })
-public class Lab1AutoConfiguration {
+public class MemoryAutoConfiguration {
 }

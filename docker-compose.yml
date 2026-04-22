@@ -1,5 +1,5 @@
 services:
-  # LAB3: контейнер с Spring Boot приложением.
+  # Контейнер с Spring Boot приложением.
   app:
     # Собираем приложение из Dockerfile в корне проекта.
     build:
@@ -7,8 +7,8 @@ services:
       dockerfile: Dockerfile
     container_name: airline-tickets-app
     environment:
-      # Профиль lab3 включает PostgreSQL и Flyway migrations.
-      SPRING_PROFILES_ACTIVE: lab3
+      # Профиль postgres включает PostgreSQL и Flyway migrations.
+      SPRING_PROFILES_ACTIVE: postgres
       # Внутри docker compose к PostgreSQL обращаемся по имени сервиса postgres.
       DB_URL: jdbc:postgresql://postgres:5432/airline_tickets
       DB_USERNAME: postgres
@@ -22,7 +22,7 @@ services:
       postgres:
         condition: service_healthy
 
-  # LAB2/LAB3: контейнер с PostgreSQL.
+  # Контейнер с PostgreSQL.
   postgres:
     image: postgres:17-alpine
     container_name: airline-tickets-postgres

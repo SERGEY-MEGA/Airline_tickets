@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * Сущность пассажира.
- * LAB1 — хранится в HashMap; LAB2/LAB3 — таблица {@code passengers}.
+ * В memory-режиме хранится в HashMap, в PostgreSQL — в таблице {@code passengers}.
  */
 @Entity
 @Table(name = "passengers")

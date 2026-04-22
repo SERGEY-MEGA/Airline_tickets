@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-@ActiveProfiles("lab1")
+@ActiveProfiles("memory")
 public class BookingControllerTest {
 
     @Autowired

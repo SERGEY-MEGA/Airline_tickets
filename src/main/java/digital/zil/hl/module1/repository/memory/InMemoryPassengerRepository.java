@@ -15,11 +15,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import static java.lang.String.format;
 
 /**
- * Репозиторий LAB1 для пассажиров.
+ * In-memory репозиторий для пассажиров.
  * Данные — в {@code HashMap}; ид считаются через {@code AtomicLong}.
  */
 @Repository
-@Profile("lab1")
+@Profile("memory")
 public class InMemoryPassengerRepository implements PassengerRepository {
 
     private static final String PASSENGER_NOT_FOUND_MSG = "Пассажир с ID %d не найден";

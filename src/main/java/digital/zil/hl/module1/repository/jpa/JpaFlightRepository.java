@@ -13,11 +13,11 @@ import java.util.List;
 import static java.lang.String.format;
 
 /**
- * Репозиторий LAB2 для рейсов.
- * Прячет внутри Spring Data JPA и оставляет сервису тот же интерфейс, что и в LAB1.
+ * PostgreSQL-репозиторий для рейсов.
+ * Прячет Spring Data JPA за общим интерфейсом FlightRepository.
  */
 @Repository
-@Profile({"lab2", "lab3"})
+@Profile("postgres")
 @Transactional(readOnly = true)
 public class JpaFlightRepository implements FlightRepository {
 
@@ -49,7 +49,7 @@ public class JpaFlightRepository implements FlightRepository {
     }
 
     /**
-     * В LAB2 выборка делается через JPA:
+     * В PostgreSQL-режиме выборка делается через JPA:
      * по направлению,
      * по дате,
      * или сразу по двум фильтрам.

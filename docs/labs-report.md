@@ -1,40 +1,32 @@
-# Личный отчёт по LAB1-LAB5
+# Личный отчёт и карта проекта
 
-## LAB1
+## Главная идея
 
-Данные хранятся в памяти приложения через `repository/memory`.
-Профиль по умолчанию: `lab1`.
-База данных не нужна.
+Проект больше не привязан к профилям с номерами лабораторных.
+Есть два понятных режима:
 
-Показать:
+- `postgres` - основной рабочий режим: PostgreSQL, JPA, Flyway;
+- `memory` - быстрый режим без БД: данные в памяти.
 
-- `application.properties`
-- `Lab1DataInitializer`
-- `repository/memory`
-- `GET /flights`
-- `POST /bookings`
+Так проект проще расширять: новые лабораторные добавляют функциональность, а не новые случайные профили.
 
-## LAB2
+## PostgreSQL режим
 
-Данные хранятся в PostgreSQL через Spring Data JPA.
-Профиль: `lab2`.
-Схему создаёт Hibernate: `spring.jpa.hibernate.ddl-auto=create`.
-Тестовые данные загружаются через `data.sql`.
-Flyway отключён.
+Используется по умолчанию.
 
-Показать:
-
-- `application-lab2.properties`
-- JPA entities в `model`
-- `repository/jpa`
-- `data.sql`
-
-Запуск:
+Команды:
 
 ```bash
 docker compose up -d postgres
-./gradlew bootRun --args='--spring.profiles.active=lab2'
+./gradlew bootRun
 ```
+
+Что показать:
+
+- `application.properties` - профиль по умолчанию `postgres`;
+- `application-postgres.properties` - подключение к БД, Flyway, Hibernate `validate`;
+- `repository/jpa` - JPA-реализация репозиториев;
+- `db/migration` - создание схемы и стартовые данные.
 
 Проверка:
 
@@ -43,103 +35,58 @@ curl http://localhost:8080/flights
 curl "http://localhost:8080/flights/free-seats?destination=Moscow&date=2026-06-10"
 ```
 
-## LAB3
+## Memory режим
 
-Приложение и PostgreSQL запускаются через Docker Compose.
-Профиль: `lab3`.
-Схему и стартовые данные создаёт Flyway.
-Hibernate не создаёт таблицы, а проверяет схему: `ddl-auto=validate`.
-`data.sql` отключён.
+Команда:
 
-Показать:
+```bash
+./gradlew bootRun --args='--spring.profiles.active=memory'
+```
 
-- `Dockerfile`
-- `docker-compose.yml`
-- `application-lab3.properties`
-- `db/migration/V1__create_airline_schema.sql`
-- `db/migration/V2__insert_test_data.sql`
-- `flyway_schema_history`
+Что показать:
 
-Запуск:
+- `application-memory.properties` - отключение JDBC/JPA/Flyway;
+- `MemoryAutoConfiguration` - дополнительное отключение автоконфигурации БД;
+- `MemoryDataInitializer` - стартовые тестовые данные;
+- `repository/memory` - хранение в `HashMap`.
+
+## Docker стенд
+
+Команда:
 
 ```bash
 docker compose up -d --build
 ```
+
+Что показать:
+
+- `Dockerfile` - сборка jar и запуск приложения;
+- `docker-compose.yml` - сервисы `app` и `postgres`;
+- `depends_on` + `healthcheck` - приложение ждёт готовность PostgreSQL.
 
 Проверка:
 
 ```bash
 docker compose ps
 curl http://localhost:8080/flights
-curl "http://localhost:8080/flights/free-seats?destination=Moscow&date=2026-06-10"
 docker compose exec -T postgres psql -U postgres -d airline_tickets -c "select installed_rank, version, description, success from flyway_schema_history order by installed_rank;"
 ```
 
-## LAB4
-
-Нагрузочное тестирование через k6.
-Используется стандартный пакет `k6/http` и executor `ramping-vus`.
-
-Что нагружается:
-
-- `POST /flights` - создание простой сущности `Flight`, у неё нет ссылок на другие таблицы.
-- `GET /flights/free-seats?destination=Moscow&date=2026-06-10` - дополнительный endpoint со статистикой свободных мест.
+## Нагрузка k6
 
 Файлы:
 
-- `k6/load-profile.js` - общий профиль нагрузки.
-- `k6/lab4-load-test.js` - сценарий LAB4.
-- `scripts/plot_k6_results.py` - строит график зависимости времени отклика.
+- `k6/load-profile.js` - `ramping-vus`;
+- `k6/lab4-load-test.js` - создание рейса и запрос статистики свободных мест;
+- `scripts/plot_k6_results.py` - график времени ответа;
+- `scripts/seed_data.py` - заполнение данных перед нагрузкой.
 
 Команды:
 
 ```bash
-docker compose up -d --build
 k6 run --out json=reports/k6-lab4-result.json k6/lab4-load-test.js
 python3 scripts/plot_k6_results.py --input reports/k6-lab4-result.json --output reports/k6-lab4-response-time.png
 ```
-
-Что сказать:
-
-`ramping-vus` постепенно увеличивает число виртуальных пользователей.
-В JSON-результате k6 есть точки `http_req_duration`.
-Python-скрипт читает эти точки и строит PNG-график времени ответа.
-
-## LAB5
-
-Перед нагрузочным тестом данные создаются внешним Python-скриптом.
-Это удобнее для k6, потому что можно быстро менять объём данных через `--count`.
-
-Новые файлы:
-
-- `scripts/seed_data.py` - очищает сервис через `/clear` и создаёт данные.
-- `k6/load-profile.js` - профиль нагрузки k6.
-- `k6/booking-load-test.js` - простой k6-сценарий чтения API.
-- `scripts/plot_k6_results.py` - строит график по JSON-результату k6.
-
-Команды:
-
-```bash
-pip install -r requirements-lab5.txt
-python3 scripts/seed_data.py --count 500 --endpoint bookings
-k6 run --out json=reports/k6-result.json k6/booking-load-test.js
-python3 scripts/plot_k6_results.py --input reports/k6-result.json
-```
-
-## Ключевые отличия
-
-- LAB1: память, без БД, самый простой запуск.
-- LAB2: PostgreSQL + JPA, схема создаётся Hibernate.
-- LAB3: Docker + PostgreSQL + Flyway, схема управляется миграциями.
-- LAB4: k6 нагружает REST API и строится график времени ответа.
-- LAB5: данные для нагрузки создаются отдельным скриптом, нагрузка запускается через k6.
-
-## Что отвечать на доп. задачки
-
-Если просят поменять объём данных: изменить `--count`.
-Если просят тестировать другой endpoint: изменить `--endpoint` или k6-сценарий.
-Если просят очистить данные: `DELETE /clear`.
-Если просят показать график: запустить k6 с `--out json=...`, потом `plot_k6_results.py`.
 
 ## Карта кода
 
@@ -149,47 +96,39 @@ python3 scripts/plot_k6_results.py --input reports/k6-result.json
 
 REST API:
 
-- `FlightController` - endpoints `/flights`, включая свободные места.
-- `PassengerController` - endpoints `/passengers`.
-- `BookingController` - endpoints `/bookings`.
-- `MaintenanceController` - учебный endpoint `/clear` для LAB5.
+- `FlightController` - `/flights`, свободные места, доступность рейсов;
+- `PassengerController` - `/passengers`;
+- `BookingController` - `/bookings`;
+- `MaintenanceController` - `/clear` для очистки перед нагрузкой.
 
 DTO:
 
-- `controller/dto/*Request` - JSON, который приходит в `POST`/`PUT`.
-- `controller/dto/*Response` - JSON, который отдаётся наружу.
-- `FlightAvailabilityResponse` - ответ для расчёта свободных мест.
+- `controller/dto/*Request` - входной JSON;
+- `controller/dto/*Response` - выходной JSON;
+- `FlightAvailabilityResponse` - статистика свободных мест.
 
 Бизнес-логика:
 
-- `FlightService` - валидация рейсов и расчёт свободных мест.
-- `PassengerService` - валидация пассажиров.
-- `BookingService` - проверяет рейс, пассажира, занятость места и вместимость.
+- `FlightService` - рейсы, валидация, расчёт свободных мест;
+- `PassengerService` - пассажиры и валидация;
+- `BookingService` - проверка рейса, пассажира, места и вместимости.
 
 Хранение:
 
-- `repository/*Repository` - общий интерфейс, чтобы сервис не зависел от способа хранения.
-- `repository/memory` - LAB1, данные в `HashMap`.
-- `repository/jpa` - LAB2/LAB3, данные в PostgreSQL через Spring Data JPA.
+- `repository/*Repository` - общий контракт;
+- `repository/jpa` - PostgreSQL;
+- `repository/memory` - память.
 
-БД и профили:
+БД:
 
-- `application.properties` - профиль по умолчанию `lab1`.
-- `application-lab2.properties` - PostgreSQL + JPA + `data.sql`.
-- `application-lab3.properties` - PostgreSQL + Flyway + Hibernate `validate`.
-- `data.sql` - тестовые данные только для LAB2.
-- `db/migration/V1__create_airline_schema.sql` - DDL для LAB3.
-- `db/migration/V2__insert_test_data.sql` - тестовые данные для LAB3.
+- `V1__create_airline_schema.sql` - таблицы и ограничения;
+- `V2__insert_test_data.sql` - стартовые данные;
+- `flyway_schema_history` - история применённых миграций.
 
-Docker:
+## Что говорить на защите
 
-- `Dockerfile` - сборка jar и запуск приложения в контейнере.
-- `docker-compose.yml` - контейнеры `app` и `postgres`.
-
-Нагрузка:
-
-- `scripts/seed_data.py` - заполняет сервис данными перед k6.
-- `k6/load-profile.js` - профиль нагрузки.
-- `k6/lab4-load-test.js` - LAB4-сценарий: создание рейса и статистика свободных мест.
-- `k6/booking-load-test.js` - k6-сценарий.
-- `scripts/plot_k6_results.py` - график по результатам k6.
+1. Номера лабораторных не зашиты в профили, потому что это плохо масштабируется.
+2. Основной режим приложения - `postgres`.
+3. Схема БД управляется Flyway, Hibernate только проверяет её через `validate`.
+4. Memory-режим оставлен как простой способ показать бизнес-логику без инфраструктуры.
+5. Нагрузочный тест k6 создаёт простые сущности `Flight` и проверяет статистический endpoint свободных мест.

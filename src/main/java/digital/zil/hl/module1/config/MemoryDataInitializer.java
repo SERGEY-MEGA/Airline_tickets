@@ -14,18 +14,18 @@ import digital.zil.hl.module1.service.PassengerService;
 import java.time.LocalDate;
 
 /**
- * Заполняет приложение тестовыми данными при старте LAB1.
- * Нужен для быстрой демонстрации без ручного создания рейсов и пассажиров.
+ * Заполняет in-memory режим тестовыми данными при старте.
+ * В PostgreSQL такие данные создаются миграцией Flyway.
  */
 @Component
-@Profile("lab1")
-public class Lab1DataInitializer implements CommandLineRunner {
+@Profile("memory")
+public class MemoryDataInitializer implements CommandLineRunner {
 
     private final FlightService flightService;
     private final PassengerService passengerService;
     private final BookingService bookingService;
 
-    public Lab1DataInitializer(
+    public MemoryDataInitializer(
             FlightService flightService,
             PassengerService passengerService,
             BookingService bookingService
@@ -37,7 +37,7 @@ public class Lab1DataInitializer implements CommandLineRunner {
 
     /**
      * Создаёт стартовые рейсы, пассажиров и бронирования один раз при запуске.
-     * Набор совпадает с {@code data.sql} / Flyway V2, чтобы Postman и curl из README работали и в LAB1.
+     * Набор совпадает с Flyway V2, чтобы Postman и curl работали в любом режиме.
      */
     @Override
     public void run(String... args) {
