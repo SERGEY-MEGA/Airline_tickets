@@ -12,6 +12,7 @@ fake = Faker("ru_RU")
 
 
 def parse_args():
+    # Аргументы специально простые: ими удобно менять объём данных прямо перед k6.
     parser = argparse.ArgumentParser(
         description="Fill Airline Tickets REST API with generated data before k6 load tests."
     )
@@ -26,6 +27,7 @@ def parse_args():
 
 
 def request_json(method, base_url, path, **kwargs):
+    # Общая обёртка для REST-вызовов: если сервис вернул ошибку, сразу останавливаем генерацию.
     response = requests.request(method, f"{base_url}{path}", timeout=10, **kwargs)
     if response.status_code >= 400:
         raise RuntimeError(f"{method} {path} failed: {response.status_code} {response.text}")
@@ -35,10 +37,12 @@ def request_json(method, base_url, path, **kwargs):
 
 
 def clear_data(base_url):
+    # Данные очищаются через приложение, а не прямым SQL, чтобы скрипт не зависел от БД.
     request_json("DELETE", base_url, "/clear")
 
 
 def create_flights(base_url, count, capacity):
+    # Рейсы создаются первыми: бронирование не может существовать без рейса.
     flights = []
     destinations = ["Moscow", "Saint Petersburg", "Sochi", "Kazan", "Novosibirsk", "Yekaterinburg"]
     for index in range(1, count + 1):
@@ -53,6 +57,7 @@ def create_flights(base_url, count, capacity):
 
 
 def create_passengers(base_url, count):
+    # Пассажиры создаются отдельно, чтобы затем связать каждого с бронированием.
     passengers = []
     for _ in range(count):
         payload = {
@@ -65,6 +70,7 @@ def create_passengers(base_url, count):
 
 
 def seat_name(index):
+    # Простая генерация мест: 1A, 1B, 1C... Этого достаточно для учебной нагрузки.
     letters = "ABCDEF"
     row = index // len(letters) + 1
     letter = letters[index % len(letters)]
@@ -72,6 +78,7 @@ def seat_name(index):
 
 
 def create_bookings(base_url, count):
+    # Для bookings скрипт сам создаёт зависимые таблицы: рейсы и пассажиров.
     flight_count = max(1, min(count, 50))
     capacity = max(10, math.ceil(count / flight_count) + 5)
     flights = create_flights(base_url, flight_count, capacity)

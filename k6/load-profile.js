@@ -1,7 +1,7 @@
 export const baseUrl = __ENV.BASE_URL || 'http://localhost:8080';
 
-// LAB5: учебный профиль нагрузки для k6.
-// Значения небольшие, чтобы тест безопасно запускался на ноутбуке.
+// LAB4/LAB5: учебный профиль нагрузки для k6.
+// executor ramping-vus постепенно увеличивает и снижает число виртуальных пользователей.
 export const options = {
   scenarios: {
     demo_load: {

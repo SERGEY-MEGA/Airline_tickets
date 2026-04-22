@@ -21,6 +21,8 @@ def parse_args():
 
 
 def read_duration_points(path):
+    # k6 JSON output хранится построчно: одна JSON-запись на одно событие.
+    # Для простого графика берём только точки метрики http_req_duration.
     points = []
     with Path(path).open(encoding="utf-8") as source:
         for line in source:
@@ -46,6 +48,7 @@ def main():
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
 
+    # График нужен для защиты: видно, как менялось время ответа по ходу теста.
     plt.figure(figsize=(10, 5))
     plt.plot(range(1, len(points) + 1), points)
     plt.title("k6 http_req_duration")
