@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Booking;
 import digital.zil.hl.module1.repository.BookingRepository;
+import digital.zil.hl.module1.repository.jpa.springdata.SpringDataBookingJpaRepository;
+import digital.zil.hl.module1.repository.jpa.springdata.SpringDataFlightJpaRepository;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package digital.zil.hl.module1.repository.jpa;
+package digital.zil.hl.module1.repository.jpa.springdata;
 
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
