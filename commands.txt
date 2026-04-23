@@ -1,0 +1,14 @@
+ssh -p 2305 hl@hlssh.zil.digital
+ssh -L 8080:localhost:8080 -p 2305 hl@hlssh.zil.digital
+
+docker compose up -d --build
+docker compose -f docker-compose.db.yml up -d
+
+k6 run --out influxdb=http://localhost:8086/k6 k6/lab4-load-test.js
+k6 run --out json=reports/lab6-0.5cpu-5-95.json -e BASE_URL=http://localhost:8080 -e VUS=20 -e DURATION=2m -e WRITE_PERCENT=5 -e READ_PERCENT=95 k6/lab6-ratio-test.js
+k6 run --out json=reports/lab6-1.0cpu-50-50.json -e BASE_URL=http://localhost:8080 -e VUS=20 -e DURATION=2m -e WRITE_PERCENT=50 -e READ_PERCENT=50 k6/lab6-ratio-test.js
+
+python3 scripts/plot_lab6_cpu_results.py \
+  --result 5/95@0.5=reports/lab6-0.5cpu-5-95.json \
+  --result 50/50@1.0=reports/lab6-1.0cpu-50-50.json \
+  --output reports/lab6-cpu-response-time.png

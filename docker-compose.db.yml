@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: airline-tickets-postgres-db-node
+    command: postgres -c max_connections=1000
+    environment:
+      POSTGRES_DB: ${DBNAME:-hl5}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_EXPOSE_PORT:-5432}:5432"
+    volumes:
+      - postgres_db_node_data:/var/lib/postgresql/data
+    cpus: ${POSTGRES_CPUS:-2.0}
+    mem_limit: ${POSTGRES_MEM_LIMIT:-2g}
+    mem_reservation: ${POSTGRES_MEM_RESERVATION:-1g}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DBNAME:-hl5}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:9
+    container_name: airline-tickets-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@hl.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    cpus: ${PGADMIN_CPUS:-0.5}
+    mem_limit: ${PGADMIN_MEM_LIMIT:-512m}
+    mem_reservation: ${PGADMIN_MEM_RESERVATION:-256m}
+
+volumes:
+  postgres_db_node_data:

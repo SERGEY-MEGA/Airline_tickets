@@ -1,7 +1,6 @@
 package digital.zil.hl.module1.repository.jpa;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Flight;
@@ -17,7 +16,6 @@ import static java.lang.String.format;
  * PostgreSQL-репозиторий для рейсов.
  * Прячет Spring Data JPA за общим интерфейсом FlightRepository.
  */
-@Repository
 @Profile("postgres")
 @Transactional(readOnly = true)
 public class JpaFlightRepository implements FlightRepository {

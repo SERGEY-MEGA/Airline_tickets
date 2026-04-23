@@ -1,7 +1,6 @@
 package digital.zil.hl.module1.repository.memory;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
 import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Passenger;
 import digital.zil.hl.module1.repository.PassengerRepository;
@@ -18,7 +17,6 @@ import static java.lang.String.format;
  * In-memory репозиторий для пассажиров.
  * Данные — в {@code HashMap}; ид считаются через {@code AtomicLong}.
  */
-@Repository
 @Profile("memory")
 public class InMemoryPassengerRepository implements PassengerRepository {
 

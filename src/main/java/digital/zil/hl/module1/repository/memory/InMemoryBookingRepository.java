@@ -1,7 +1,6 @@
 package digital.zil.hl.module1.repository.memory;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
 import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Booking;
 import digital.zil.hl.module1.repository.BookingRepository;
@@ -18,7 +17,6 @@ import static java.lang.String.format;
  * In-memory репозиторий для бронирований.
  * Здесь же защищаемся от двойного бронирования места и переполнения рейса.
  */
-@Repository
 @Profile("memory")
 public class InMemoryBookingRepository implements BookingRepository {
 

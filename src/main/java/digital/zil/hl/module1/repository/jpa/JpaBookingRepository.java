@@ -2,7 +2,6 @@ package digital.zil.hl.module1.repository.jpa;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Booking;
@@ -18,7 +17,6 @@ import static java.lang.String.format;
  * PostgreSQL-репозиторий для бронирований.
  * Использует Spring Data JPA и сохраняет бизнес-правила сервиса.
  */
-@Repository
 @Profile("postgres")
 @Transactional(readOnly = true)
 public class JpaBookingRepository implements BookingRepository {

@@ -1,7 +1,6 @@
 package digital.zil.hl.module1.repository.memory;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
 import digital.zil.hl.module1.controller.exception.AirlineException;
 import digital.zil.hl.module1.model.Flight;
 import digital.zil.hl.module1.repository.FlightRepository;
@@ -19,7 +18,6 @@ import static java.lang.String.format;
  * In-memory репозиторий для рейсов.
  * Хранит данные в static HashMap и работает без базы данных.
  */
-@Repository
 @Profile("memory")
 public class InMemoryFlightRepository implements FlightRepository {
 

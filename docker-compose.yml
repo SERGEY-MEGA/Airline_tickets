@@ -10,13 +10,22 @@ services:
       # Профиль postgres включает PostgreSQL и Flyway migrations.
       SPRING_PROFILES_ACTIVE: postgres
       # Внутри docker compose к PostgreSQL обращаемся по имени сервиса postgres.
-      DB_URL: jdbc:postgresql://postgres:5432/airline_tickets
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
+      DBHOST: ${DBHOST:-postgres}
+      DBPORT: ${DBPORT:-5432}
+      DBNAME: ${DBNAME:-hl5}
+      SCHEMANAME: ${SCHEMANAME:-hl5}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      TOMCAT_MAX_THREADS: ${TOMCAT_MAX_THREADS:-200}
+      SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL:-false}
+      SERVER_PORT: 8080
     ports:
       # По умолчанию приложение открывается на localhost:8080.
       # Если 8080 занят, можно запустить так: APP_PORT=8083 docker compose up -d --build
       - "${APP_PORT:-8080}:8080"
+    cpus: ${APP_CPUS:-1.0}
+    mem_limit: ${APP_MEM_LIMIT:-768m}
+    mem_reservation: ${APP_MEM_RESERVATION:-512m}
     depends_on:
       # Приложение стартует только после того, как PostgreSQL станет healthy.
       postgres:
@@ -28,17 +37,20 @@ services:
     container_name: airline-tickets-postgres
     environment:
       # Учебные параметры БД для локального запуска.
-      POSTGRES_DB: airline_tickets
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DBNAME:-hl5}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_EXPOSE_PORT:-5432}:5432"
     volumes:
       # Данные PostgreSQL сохраняются между перезапусками контейнера.
       - postgres_data:/var/lib/postgresql/data
+    cpus: ${POSTGRES_CPUS:-1.0}
+    mem_limit: ${POSTGRES_MEM_LIMIT:-1g}
+    mem_reservation: ${POSTGRES_MEM_RESERVATION:-512m}
     healthcheck:
       # healthcheck нужен, чтобы app не стартовал раньше готовности БД.
-      test: ["CMD-SHELL", "pg_isready -U postgres -d airline_tickets"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DBNAME:-hl5}"]
       interval: 10s
       timeout: 5s
       retries: 5

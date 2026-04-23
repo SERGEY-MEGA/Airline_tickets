@@ -36,6 +36,7 @@ docker compose up -d --build
 docker compose ps
 curl http://localhost:8080/flights
 curl "http://localhost:8080/flights/free-seats?destination=Moscow&date=2026-06-10"
+open http://localhost:8080/swagger-ui.html
 ```
 
 Проверка Flyway:
@@ -79,9 +80,26 @@ docker compose up -d postgres
 
 Параметры БД можно переопределить:
 
-- `DB_URL`
+- `DBHOST`
+- `DBPORT`
+- `DBNAME`
+- `SCHEMANAME`
 - `DB_USERNAME`
 - `DB_PASSWORD`
+- `TOMCAT_MAX_THREADS`
+- `SPRING_JPA_SHOW_SQL`
+
+Формат JDBC соответствует требованиям LAB7:
+
+```properties
+spring.datasource.url=jdbc:postgresql://${DBHOST:hl12.zil}:${DBPORT:5432}/${DBNAME:hl5}?currentSchema=${SCHEMANAME:hl5}
+```
+
+Swagger UI доступен по адресу:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
 
 ## Запуск без БД
 
@@ -222,8 +240,8 @@ curl -X POST http://localhost:8080/bookings \
 5. `controller`: REST API.
 6. `db/migration`: Flyway DDL и DML.
 7. `Dockerfile` и `docker-compose.yml`: контейнерный стенд.
-8. Postman или curl: `GET /flights`, `GET /flights/free-seats`, `POST /bookings`.
-9. k6: `k6/load-profile.js`, `k6/lab4-load-test.js`, график из `scripts/plot_k6_results.py`.
+8. Postman или curl: use [`postman/`](/Users/sergejmegeran/Desktop/Высоконагруженные%20вычислительные%20системы/Airline_tickets/postman) for the memory and postgres collections, or `requests.http` for `GET /flights`, `GET /flights/free-seats`, `POST /bookings`.
+9. k6: `k6/load-profile.js`, единый сценарий `k6/lab4-load-test.js`, график из `scripts/plot_k6_results.py`.
 
 ## Проверки
 
@@ -236,6 +254,41 @@ python3 -m py_compile scripts/seed_data.py scripts/plot_k6_results.py
 
 ## Нагрузочное тестирование
 
+Для LAB6 добавлен отдельный сценарий с постоянной нагрузкой и заданным соотношением запись/чтение:
+
+```bash
+k6 run \
+  --out json=reports/lab6-0.5cpu-5-95.json \
+  -e BASE_URL=http://localhost:8080 \
+  -e VUS=20 \
+  -e DURATION=2m \
+  -e WRITE_PERCENT=5 \
+  -e READ_PERCENT=95 \
+  k6/lab6-ratio-test.js
+```
+
+График по экспериментам с разным CPU строится так:
+
+```bash
+python3 scripts/plot_lab6_cpu_results.py \
+  --result 5/95@0.5=reports/lab6-0.5cpu-5-95.json \
+  --result 5/95@1.0=reports/lab6-1.0cpu-5-95.json \
+  --result 50/50@0.5=reports/lab6-0.5cpu-50-50.json \
+  --result 95/5@0.5=reports/lab6-0.5cpu-95-5.json \
+  --output reports/lab6-cpu-response-time.png
+```
+
+Для LAB7 вынесен отдельный compose-файл БД-узла:
+
+```bash
+docker compose -f docker-compose.db.yml up -d
+```
+
+Он поднимает:
+
+- `postgres` c `command: postgres -c max_connections=1000`
+- `pgadmin` на `http://localhost:5050`
+
 Установить зависимости Python:
 
 ```bash
@@ -246,6 +299,20 @@ pip install -r requirements-lab5.txt
 
 ```bash
 k6 run --out json=reports/k6-lab4-result.json k6/lab4-load-test.js
+```
+
+Внутри сценария:
+
+- `POST /flights` нагружает создание простой сущности `Flight`;
+- `GET /flights/free-seats?destination=Moscow&date=2026-06-10` проверяет дополнительный endpoint статистики;
+- профиль нагрузки реализует тест удвоения: `10 -> 20 -> 40 -> 80 VUs` с минутным плато на каждом уровне;
+- итоговый график строится как зависимость среднего времени ответа (`avg`) от нагрузки (`vus`).
+
+Мониторинг через Grafana:
+
+```bash
+docker compose -f docker-compose-monitoring.yml up -d
+k6 run --out influxdb=http://localhost:8086/k6 --out json=reports/k6-lab4-result.json k6/lab4-load-test.js
 ```
 
 График:
