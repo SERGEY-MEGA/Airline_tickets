@@ -1,0 +1,67 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${APP_IMAGE:-10.60.3.11:8888/library/airline-tickets-app:latest}
+    container_name: airline-tickets-app
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DBHOST: ${DBHOST:-postgres}
+      DBPORT: ${DBPORT:-5432}
+      DBNAME: ${DBNAME:-hl5}
+      SCHEMANAME: ${SCHEMANAME:-hl5}
+      DB_USERNAME: ${DB_USERNAME:-hl5}
+      DB_PASSWORD: ${DB_PASSWORD:-pass_5}
+      TOMCAT_MAX_THREADS: ${TOMCAT_MAX_THREADS:-200}
+      SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL:-false}
+      SERVER_PORT: 8080
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    cpus: ${APP_CPUS:-1.0}
+    mem_limit: ${APP_MEM_LIMIT:-768m}
+    mem_reservation: ${APP_MEM_RESERVATION:-512m}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  additional-service:
+    build:
+      context: ../Airline_tickets_additional_service
+      dockerfile: Dockerfile
+    image: ${ADDITIONAL_SERVICE_IMAGE:-10.60.3.11:8888/library/airline-tickets-additional-service:latest}
+    container_name: airline-tickets-additional-service
+    environment:
+      CORE_SERVICE_URL: http://app:8080
+      TOMCAT_MAX_THREADS: ${ADDITIONAL_TOMCAT_MAX_THREADS:-100}
+      SERVER_PORT: 8081
+    ports:
+      - "${ADDITIONAL_SERVICE_PORT:-8081}:8081"
+    cpus: ${ADDITIONAL_SERVICE_CPUS:-0.5}
+    mem_limit: ${ADDITIONAL_SERVICE_MEM_LIMIT:-512m}
+    mem_reservation: ${ADDITIONAL_SERVICE_MEM_RESERVATION:-256m}
+    depends_on:
+      - app
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: airline-tickets-postgres
+    environment:
+      POSTGRES_DB: ${DBNAME:-hl5}
+      POSTGRES_USER: ${DB_USERNAME:-hl5}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-pass_5}
+    ports:
+      - "${POSTGRES_EXPOSE_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    cpus: ${POSTGRES_CPUS:-1.0}
+    mem_limit: ${POSTGRES_MEM_LIMIT:-1g}
+    mem_reservation: ${POSTGRES_MEM_RESERVATION:-512m}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-hl5} -d ${DBNAME:-hl5}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
